@@ -1,0 +1,74 @@
+{
+  "code": 200,
+  "status": "SUCCESS",
+  "data": {
+    "list": {
+      "2025/05/05": [
+        "rec EGO 99 19.07 2025/05/05"
+      ],
+      "2025/05/06": [
+        "rec CYBR 5 365.90 2025/05/06"
+      ]
+    },
+    "trades": [
+      {
+        "execution_id": "00016e4a.681a0c7e.01.01",
+        "symbol": "CYBR",
+        "supports_tax_opt": "1",
+        "side": "B",
+        "order_description": "Bot 5 @ 365.90 on IBKRATS",
+        "trade_time": "20250506-14:26:29",
+        "trade_time_r": 1746541589000,
+        "size": 5,
+        "price": "365.90",
+        "order_ref": "Parent_CYBR_2025-05-06 22:26:28",
+        "submitter": "",
+        "exchange": "IBKRATS",
+        "commission": "1.09",
+        "net_amount": 1829.5,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "CYBERARK SOFTWARE LTD/ISRAEL",
+        "contract_description_1": "CYBR",
+        "sec_type": "STK",
+        "listing_exchange": "NASDAQ.NMS",
+        "conid": 168078418,
+        "conidEx": "168078418",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      },
+      {
+        "execution_id": "0000d48a.6818afc9.01.01",
+        "symbol": "EGO",
+        "supports_tax_opt": "1",
+        "side": "B",
+        "order_description": "Bot 99 @ 19.07 on IBKRATS",
+        "trade_time": "20250505-13:31:11",
+        "trade_time_r": 1746451871000,
+        "size": 99,
+        "price": "19.07",
+        "order_ref": "Parent_EGO_2025-05-05 21:31:10",
+        "submitter": "",
+        "exchange": "IBKRATS",
+        "commission": "1.09",
+        "net_amount": 1887.93,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "ELDORADO GOLD CORP",
+        "contract_description_1": "EGO",
+        "sec_type": "STK",
+        "listing_exchange": "NYSE",
+        "conid": 346219259,
+        "conidEx": "346219259",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      }
+    ]
+  }
+}

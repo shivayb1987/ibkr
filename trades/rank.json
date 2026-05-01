@@ -1,0 +1,1822 @@
+{
+  "content": {
+    "ExtensionData": null,
+    "graphData": {
+      "RSRating": 98,
+      "dataSeries": [
+        {
+          "indexClose": 6882.71,
+          "indexClose2": null,
+          "date": "/Date(1765353600000-0800)/",
+          "high": 187.2,
+          "low": 161.05,
+          "close": 180.6,
+          "volume": 646800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6870.4042,
+          "indexClose2": null,
+          "date": "/Date(1764921600000-0800)/",
+          "high": 165.56,
+          "low": 115.21,
+          "close": 160.95,
+          "volume": 991400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6849.0874,
+          "indexClose2": null,
+          "date": "/Date(1764316800000-0800)/",
+          "high": 145.02,
+          "low": 107.09,
+          "close": 115.11,
+          "volume": 1023900,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6602.9863,
+          "indexClose2": null,
+          "date": "/Date(1763712000000-0800)/",
+          "high": 158.0,
+          "low": 94.4501,
+          "close": 136.92,
+          "volume": 1351500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6734.1107,
+          "indexClose2": null,
+          "date": "/Date(1763107200000-0800)/",
+          "high": 122.12,
+          "low": 102.3,
+          "close": 107.11,
+          "volume": 531700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6728.8011,
+          "indexClose2": null,
+          "date": "/Date(1762502400000-0800)/",
+          "high": 134.86,
+          "low": 106.44,
+          "close": 114.65,
+          "volume": 387200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6840.1987,
+          "indexClose2": null,
+          "date": "/Date(1761894000000-0700)/",
+          "high": 139.0,
+          "low": 118.93,
+          "close": 123.06,
+          "volume": 505700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6791.6938,
+          "indexClose2": null,
+          "date": "/Date(1761289200000-0700)/",
+          "high": 128.95,
+          "low": 96.9983,
+          "close": 125.57,
+          "volume": 619700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6664.011,
+          "indexClose2": null,
+          "date": "/Date(1760684400000-0700)/",
+          "high": 106.5654,
+          "low": 92.95,
+          "close": 94.835,
+          "volume": 533000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6552.5132,
+          "indexClose2": null,
+          "date": "/Date(1760079600000-0700)/",
+          "high": 112.0,
+          "low": 94.83,
+          "close": 94.83,
+          "volume": 709700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6715.7893,
+          "indexClose2": null,
+          "date": "/Date(1759474800000-0700)/",
+          "high": 111.54,
+          "low": 100.835,
+          "close": 107.88,
+          "volume": 551200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6643.6975,
+          "indexClose2": null,
+          "date": "/Date(1758870000000-0700)/",
+          "high": 107.34,
+          "low": 93.8401,
+          "close": 102.53,
+          "volume": 608900,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6664.3648,
+          "indexClose2": null,
+          "date": "/Date(1758265200000-0700)/",
+          "high": 99.99,
+          "low": 86.0953,
+          "close": 96.11,
+          "volume": 815300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6584.285,
+          "indexClose2": null,
+          "date": "/Date(1757660400000-0700)/",
+          "high": 98.52,
+          "low": 80.53,
+          "close": 97.19,
+          "volume": 725600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6481.4955,
+          "indexClose2": null,
+          "date": "/Date(1757055600000-0700)/",
+          "high": 86.86,
+          "low": 77.21,
+          "close": 83.38,
+          "volume": 678800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6460.26,
+          "indexClose2": null,
+          "date": "/Date(1756450800000-0700)/",
+          "high": 94.75,
+          "low": 82.55,
+          "close": 83.79,
+          "volume": 843100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6466.913,
+          "indexClose2": null,
+          "date": "/Date(1755846000000-0700)/",
+          "high": 110.0,
+          "low": 87.6,
+          "close": 92.4,
+          "volume": 1329500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6449.7966,
+          "indexClose2": null,
+          "date": "/Date(1755241200000-0700)/",
+          "high": 111.61,
+          "low": 84.51,
+          "close": 92.91,
+          "volume": 1466000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6389.4453,
+          "indexClose2": null,
+          "date": "/Date(1754636400000-0700)/",
+          "high": 96.0,
+          "low": 84.54,
+          "close": 87.92,
+          "volume": 700500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6238.0066,
+          "indexClose2": null,
+          "date": "/Date(1754031600000-0700)/",
+          "high": 98.26,
+          "low": 81.095,
+          "close": 84.0,
+          "volume": 1098300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6388.6445,
+          "indexClose2": null,
+          "date": "/Date(1753426800000-0700)/",
+          "high": 114.74,
+          "low": 88.2301,
+          "close": 95.02,
+          "volume": 2572100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6296.789,
+          "indexClose2": null,
+          "date": "/Date(1752822000000-0700)/",
+          "high": 118.17,
+          "low": 101.3492,
+          "close": 113.81,
+          "volume": 1219200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6259.7464,
+          "indexClose2": null,
+          "date": "/Date(1752217200000-0700)/",
+          "high": 140.4166,
+          "low": 108.17,
+          "close": 114.61,
+          "volume": 2134700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6279.351,
+          "indexClose2": null,
+          "date": "/Date(1751612400000-0700)/",
+          "high": 136.78,
+          "low": 111.14,
+          "close": 118.37,
+          "volume": 1090000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6173.0736,
+          "indexClose2": null,
+          "date": "/Date(1751007600000-0700)/",
+          "high": 125.52,
+          "low": 106.92,
+          "close": 122.9,
+          "volume": 1270100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5967.8395,
+          "indexClose2": null,
+          "date": "/Date(1750402800000-0700)/",
+          "high": 136.81,
+          "low": 111.975,
+          "close": 113.89,
+          "volume": 658900,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5976.9659,
+          "indexClose2": null,
+          "date": "/Date(1749798000000-0700)/",
+          "high": 128.33,
+          "low": 109.42,
+          "close": 122.28,
+          "volume": 708700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6000.3551,
+          "indexClose2": null,
+          "date": "/Date(1749193200000-0700)/",
+          "high": 169.99,
+          "low": 110.21,
+          "close": 122.02,
+          "volume": 991000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5911.6867,
+          "indexClose2": null,
+          "date": "/Date(1748588400000-0700)/",
+          "high": 173.83,
+          "low": 159.95,
+          "close": 167.74,
+          "volume": 390800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5802.8151,
+          "indexClose2": null,
+          "date": "/Date(1747983600000-0700)/",
+          "high": 184.275,
+          "low": 156.53,
+          "close": 159.95,
+          "volume": 654400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5958.3755,
+          "indexClose2": null,
+          "date": "/Date(1747378800000-0700)/",
+          "high": 182.0,
+          "low": 114.43,
+          "close": 174.71,
+          "volume": 1186800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5659.9123,
+          "indexClose2": null,
+          "date": "/Date(1746774000000-0700)/",
+          "high": 137.0,
+          "low": 112.3,
+          "close": 120.73,
+          "volume": 573100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5686.6748,
+          "indexClose2": null,
+          "date": "/Date(1746169200000-0700)/",
+          "high": 121.7679,
+          "low": 101.0,
+          "close": 114.63,
+          "volume": 852400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5525.2051,
+          "indexClose2": null,
+          "date": "/Date(1745564400000-0700)/",
+          "high": 152.51,
+          "low": 123.08,
+          "close": 123.54,
+          "volume": 608900,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5282.701,
+          "indexClose2": null,
+          "date": "/Date(1744959600000-0700)/",
+          "high": 151.2999,
+          "low": 113.775,
+          "close": 149.0,
+          "volume": 644700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5363.3595,
+          "indexClose2": null,
+          "date": "/Date(1744354800000-0700)/",
+          "high": 134.5317,
+          "low": 66.09,
+          "close": 132.03,
+          "volume": 957700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5074.0756,
+          "indexClose2": null,
+          "date": "/Date(1743750000000-0700)/",
+          "high": 76.89,
+          "low": 45.88,
+          "close": 71.37,
+          "volume": 721500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5580.9436,
+          "indexClose2": null,
+          "date": "/Date(1743145200000-0700)/",
+          "high": 63.83,
+          "low": 50.07,
+          "close": 51.68,
+          "volume": 203300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5667.5643,
+          "indexClose2": null,
+          "date": "/Date(1742540400000-0700)/",
+          "high": 58.92,
+          "low": 50.26,
+          "close": 58.17,
+          "volume": 175300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5638.9402,
+          "indexClose2": null,
+          "date": "/Date(1741935600000-0700)/",
+          "high": 53.28,
+          "low": 40.67,
+          "close": 52.41,
+          "volume": 203800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5770.1956,
+          "indexClose2": null,
+          "date": "/Date(1741334400000-0800)/",
+          "high": 55.91,
+          "low": 42.0,
+          "close": 44.66,
+          "volume": 305400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5954.5048,
+          "indexClose2": null,
+          "date": "/Date(1740729600000-0800)/",
+          "high": 59.23,
+          "low": 50.0001,
+          "close": 54.9,
+          "volume": 210300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6013.1279,
+          "indexClose2": null,
+          "date": "/Date(1740124800000-0800)/",
+          "high": 67.6741,
+          "low": 56.27,
+          "close": 57.6,
+          "volume": 184700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6114.6315,
+          "indexClose2": null,
+          "date": "/Date(1739520000000-0800)/",
+          "high": 69.45,
+          "low": 52.5156,
+          "close": 66.06,
+          "volume": 210600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6025.9925,
+          "indexClose2": null,
+          "date": "/Date(1738915200000-0800)/",
+          "high": 60.0,
+          "low": 44.09,
+          "close": 52.42,
+          "volume": 271700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6040.5259,
+          "indexClose2": null,
+          "date": "/Date(1738310400000-0800)/",
+          "high": 49.06,
+          "low": 36.05,
+          "close": 47.63,
+          "volume": 287800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6101.2429,
+          "indexClose2": null,
+          "date": "/Date(1737705600000-0800)/",
+          "high": 44.5,
+          "low": 36.925,
+          "close": 42.54,
+          "volume": 167400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5996.6647,
+          "indexClose2": null,
+          "date": "/Date(1737100800000-0800)/",
+          "high": 40.4089,
+          "low": 28.82,
+          "close": 37.81,
+          "volume": 153400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5827.0444,
+          "indexClose2": null,
+          "date": "/Date(1736496000000-0800)/",
+          "high": 34.6046,
+          "low": 30.4,
+          "close": 30.88,
+          "volume": 74100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5942.4725,
+          "indexClose2": null,
+          "date": "/Date(1735891200000-0800)/",
+          "high": 35.9424,
+          "low": 28.99,
+          "close": 33.88,
+          "volume": 110100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5970.8376,
+          "indexClose2": null,
+          "date": "/Date(1735286400000-0800)/",
+          "high": 33.0047,
+          "low": 28.12,
+          "close": 31.85,
+          "volume": 74000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5930.8501,
+          "indexClose2": null,
+          "date": "/Date(1734681600000-0800)/",
+          "high": 36.53,
+          "low": 28.85,
+          "close": 29.38,
+          "volume": 186600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6051.092,
+          "indexClose2": null,
+          "date": "/Date(1734076800000-0800)/",
+          "high": 38.57,
+          "low": 32.42,
+          "close": 34.97,
+          "volume": 241700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6090.2705,
+          "indexClose2": null,
+          "date": "/Date(1733472000000-0800)/",
+          "high": 41.44,
+          "low": 35.5,
+          "close": 37.84,
+          "volume": 259000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 6032.3844,
+          "indexClose2": null,
+          "date": "/Date(1732867200000-0800)/",
+          "high": 38.7799,
+          "low": 33.2,
+          "close": 37.2,
+          "volume": 160100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5969.3431,
+          "indexClose2": null,
+          "date": "/Date(1732262400000-0800)/",
+          "high": 33.09,
+          "low": 27.29,
+          "close": 32.91,
+          "volume": 226000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5870.6164,
+          "indexClose2": null,
+          "date": "/Date(1731657600000-0800)/",
+          "high": 38.0,
+          "low": 25.86,
+          "close": 28.7,
+          "volume": 554300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5995.5373,
+          "indexClose2": null,
+          "date": "/Date(1731052800000-0800)/",
+          "high": 34.898,
+          "low": 22.6001,
+          "close": 31.56,
+          "volume": 368300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5728.8014,
+          "indexClose2": null,
+          "date": "/Date(1730444400000-0700)/",
+          "high": 24.64,
+          "low": 21.55,
+          "close": 22.6,
+          "volume": 255300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5808.117,
+          "indexClose2": null,
+          "date": "/Date(1729839600000-0700)/",
+          "high": 25.48,
+          "low": 21.65,
+          "close": 24.29,
+          "volume": 252800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5864.6679,
+          "indexClose2": null,
+          "date": "/Date(1729234800000-0700)/",
+          "high": 23.2209,
+          "low": 18.45,
+          "close": 22.3,
+          "volume": 271100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5815.0334,
+          "indexClose2": null,
+          "date": "/Date(1728630000000-0700)/",
+          "high": 22.07,
+          "low": 17.66,
+          "close": 19.79,
+          "volume": 229200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5751.0682,
+          "indexClose2": null,
+          "date": "/Date(1728025200000-0700)/",
+          "high": 22.5,
+          "low": 18.7758,
+          "close": 21.87,
+          "volume": 197100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5738.1718,
+          "indexClose2": null,
+          "date": "/Date(1727420400000-0700)/",
+          "high": 24.75,
+          "low": 17.51,
+          "close": 19.5,
+          "volume": 391200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5702.5476,
+          "indexClose2": null,
+          "date": "/Date(1726815600000-0700)/",
+          "high": 26.15,
+          "low": 24.0,
+          "close": 24.5,
+          "volume": 312000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5626.0186,
+          "indexClose2": null,
+          "date": "/Date(1726210800000-0700)/",
+          "high": 26.4,
+          "low": 20.26,
+          "close": 25.19,
+          "volume": 240100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5408.4221,
+          "indexClose2": null,
+          "date": "/Date(1725606000000-0700)/",
+          "high": 24.49,
+          "low": 20.93,
+          "close": 21.38,
+          "volume": 161100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5648.3972,
+          "indexClose2": null,
+          "date": "/Date(1725001200000-0700)/",
+          "high": 26.7499,
+          "low": 18.2947,
+          "close": 21.39,
+          "volume": 455700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5634.6058,
+          "indexClose2": null,
+          "date": "/Date(1724396400000-0700)/",
+          "high": 24.9,
+          "low": 15.25,
+          "close": 21.63,
+          "volume": 616100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5554.2511,
+          "indexClose2": null,
+          "date": "/Date(1723791600000-0700)/",
+          "high": 15.25,
+          "low": 10.4453,
+          "close": 15.25,
+          "volume": 965400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5344.1644,
+          "indexClose2": null,
+          "date": "/Date(1723186800000-0700)/",
+          "high": 10.3096,
+          "low": 6.453,
+          "close": 10.0999,
+          "volume": 199400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5346.5633,
+          "indexClose2": null,
+          "date": "/Date(1722582000000-0700)/",
+          "high": 9.26,
+          "low": 7.06,
+          "close": 7.21,
+          "volume": 196600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5459.0974,
+          "indexClose2": null,
+          "date": "/Date(1721977200000-0700)/",
+          "high": 8.07,
+          "low": 6.68,
+          "close": 7.84,
+          "volume": 165700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5505.0031,
+          "indexClose2": null,
+          "date": "/Date(1721372400000-0700)/",
+          "high": 7.46,
+          "low": 5.2501,
+          "close": 6.815,
+          "volume": 392200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5615.3488,
+          "indexClose2": null,
+          "date": "/Date(1720767600000-0700)/",
+          "high": 5.4399,
+          "low": 4.16,
+          "close": 5.05,
+          "volume": 407700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5567.1904,
+          "indexClose2": null,
+          "date": "/Date(1720162800000-0700)/",
+          "high": 6.4,
+          "low": 4.93,
+          "close": 5.02,
+          "volume": 157200,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5460.4826,
+          "indexClose2": null,
+          "date": "/Date(1719558000000-0700)/",
+          "high": 6.398,
+          "low": 5.32,
+          "close": 5.949,
+          "volume": 113600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5464.6213,
+          "indexClose2": null,
+          "date": "/Date(1718953200000-0700)/",
+          "high": 6.514,
+          "low": 5.36,
+          "close": 5.598,
+          "volume": 80700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5431.6017,
+          "indexClose2": null,
+          "date": "/Date(1718348400000-0700)/",
+          "high": 6.49,
+          "low": 5.169,
+          "close": 5.393,
+          "volume": 105500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5346.9881,
+          "indexClose2": null,
+          "date": "/Date(1717743600000-0700)/",
+          "high": 6.95,
+          "low": 5.817,
+          "close": 6.132,
+          "volume": 49700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5277.5073,
+          "indexClose2": null,
+          "date": "/Date(1717138800000-0700)/",
+          "high": 7.25,
+          "low": 6.501,
+          "close": 6.825,
+          "volume": 37300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5304.7176,
+          "indexClose2": null,
+          "date": "/Date(1716534000000-0700)/",
+          "high": 7.596,
+          "low": 7.072,
+          "close": 7.456,
+          "volume": 67700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5303.2697,
+          "indexClose2": null,
+          "date": "/Date(1715929200000-0700)/",
+          "high": 7.516,
+          "low": 6.277,
+          "close": 7.12,
+          "volume": 102300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5222.6754,
+          "indexClose2": null,
+          "date": "/Date(1715324400000-0700)/",
+          "high": 7.049,
+          "low": 6.0,
+          "close": 6.309,
+          "volume": 121100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5127.7866,
+          "indexClose2": null,
+          "date": "/Date(1714719600000-0700)/",
+          "high": 6.939,
+          "low": 5.569,
+          "close": 6.798,
+          "volume": 88400,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5099.9625,
+          "indexClose2": null,
+          "date": "/Date(1714114800000-0700)/",
+          "high": 7.985,
+          "low": 6.367,
+          "close": 6.616,
+          "volume": 117100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4967.2349,
+          "indexClose2": null,
+          "date": "/Date(1713510000000-0700)/",
+          "high": 7.297,
+          "low": 5.0,
+          "close": 6.98,
+          "volume": 525600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5123.4068,
+          "indexClose2": null,
+          "date": "/Date(1712905200000-0700)/",
+          "high": 14.074,
+          "low": 6.689,
+          "close": 6.709,
+          "volume": 439800,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5204.3351,
+          "indexClose2": null,
+          "date": "/Date(1712300400000-0700)/",
+          "high": 14.992503748125937031484257871,
+          "low": 11.394302848575712143928035982,
+          "close": 11.784107946026986506746626687,
+          "volume": 112600,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5254.35,
+          "indexClose2": null,
+          "date": "/Date(1711695600000-0700)/",
+          "high": 16.491754122938530734632683658,
+          "low": 14.377811094452773613193403298,
+          "close": 14.377811094452773613193403298,
+          "volume": 25000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5234.1801,
+          "indexClose2": null,
+          "date": "/Date(1711090800000-0700)/",
+          "high": 16.4767616191904047976011994,
+          "low": 14.242878560719640179910044978,
+          "close": 15.292353823088455772113943028,
+          "volume": 62500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5117.0882,
+          "indexClose2": null,
+          "date": "/Date(1710486000000-0700)/",
+          "high": 16.491754122938530734632683658,
+          "low": 13.718140929535232383808095952,
+          "close": 14.43778110944527736131934033,
+          "volume": 75300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5123.6911,
+          "indexClose2": null,
+          "date": "/Date(1709884800000-0800)/",
+          "high": 17.661169415292353823088455772,
+          "low": 14.992503748125937031484257871,
+          "close": 15.097451274362818590704647676,
+          "volume": 58100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5137.0838,
+          "indexClose2": null,
+          "date": "/Date(1709280000000-0800)/",
+          "high": 18.725637181409295352323838081,
+          "low": 16.491754122938530734632683658,
+          "close": 16.941529235382308845577211394,
+          "volume": 50100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5088.7999,
+          "indexClose2": null,
+          "date": "/Date(1708675200000-0800)/",
+          "high": 19.475262368815592203898050975,
+          "low": 16.656671664167916041979010495,
+          "close": 17.646176911544227886056971514,
+          "volume": 48700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5005.57,
+          "indexClose2": null,
+          "date": "/Date(1708070400000-0800)/",
+          "high": 18.725637181409295352323838081,
+          "low": 16.221889055472263868065967016,
+          "close": 18.335832083958020989505247376,
+          "volume": 65000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 5026.6086,
+          "indexClose2": null,
+          "date": "/Date(1707465600000-0800)/",
+          "high": 18.260869565217391304347826087,
+          "low": 16.491754122938530734632683658,
+          "close": 16.716641679160419790104947526,
+          "volume": 50700,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4958.6139,
+          "indexClose2": null,
+          "date": "/Date(1706860800000-0800)/",
+          "high": 20.989505247376311844077961019,
+          "low": 16.506746626686656671664167916,
+          "close": 16.986506746626686656671664168,
+          "volume": 74500,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4890.9705,
+          "indexClose2": null,
+          "date": "/Date(1706256000000-0800)/",
+          "high": 29.910044977511244377811094453,
+          "low": 19.7151424287856071964017991,
+          "close": 20.539730134932533733133433283,
+          "volume": 122100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4839.8114,
+          "indexClose2": null,
+          "date": "/Date(1705651200000-0800)/",
+          "high": 31.19940029985007496251874063,
+          "low": 26.26686656671664167916041979,
+          "close": 29.055472263868065967016491754,
+          "volume": 25300,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4783.83,
+          "indexClose2": null,
+          "date": "/Date(1705046400000-0800)/",
+          "high": 38.695652173913043478260869565,
+          "low": 29.940029985007496251874062969,
+          "close": 31.079460269865067466266866567,
+          "volume": 53000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4697.2449,
+          "indexClose2": null,
+          "date": "/Date(1704441600000-0800)/",
+          "high": 35.907046476761619190404797601,
+          "low": 27.061469265367316341829085457,
+          "close": 31.544227886056971514242878561,
+          "volume": 31100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4769.8294,
+          "indexClose2": null,
+          "date": "/Date(1703836800000-0800)/",
+          "high": 32.368815592203898050974512744,
+          "low": 26.986506746626686656671664168,
+          "close": 26.986506746626686656671664168,
+          "volume": 32100,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4754.6314,
+          "indexClose2": null,
+          "date": "/Date(1703232000000-0800)/",
+          "high": 32.03898050974512743628185907,
+          "low": 25.547226386806596701649175412,
+          "close": 31.484257871064467766116941529,
+          "volume": 39000,
+          "dateIndicator": 0
+        },
+        {
+          "indexClose": 4719.1906,
+          "indexClose2": null,
+          "date": "/Date(1702627200000-0800)/",
+          "high": 29.235382308845577211394302849,
+          "low": 26.986506746626686656671664168,
+          "close": 27.661169415292353823088455772,
+          "volume": 40200,
+          "dateIndicator": 0
+        }
+      ],
+      "asOf": "/Date(1765407954496-0800)/",
+      "latestIDCTime": "/Date(1765407660000-0800)/"
+    },
+    "companyInfo": {
+      "optionList": [
+        {
+          "value": "Yes"
+        }
+      ],
+      "shortInterestPosition": 5.090085,
+      "shortInterestRatio": -19.0,
+      "coName": "Nutex Health",
+      "symbol": "NUTX",
+      "primaryExchange": "NASDAQ",
+      "hasConvertableIssue": true,
+      "industryGroup": "Medical-Hospitals",
+      "hasWarrant": true,
+      "volume": 646800,
+      "sharesInFloat": 4454730,
+      "price": 180.6,
+      "sharesOutstandingPrimary": 7071000,
+      "priceChange": 19.65001,
+      "sharesOutstandingSecondary": null,
+      "marketCapitalizationPrimary": 1.27702259E+9,
+      "offWeekHigh": -0.0352563635,
+      "marketCapitalizationSecondary": null,
+      "weeksHiLow": {
+        "low": 28.12,
+        "high": 187.2
+      },
+      "avgVolume": 152600,
+      "delayedVolume0": 124000
+    },
+    "summary": {
+      "ExtensionData": null,
+      "headQuarter": "Houston, TX",
+      "phone": "713-660-0557",
+      "uRL": "www.nutexhealth.com",
+      "shortStory": "Operates technology-enabled healthcare services that provide s",
+      "companyNews": {
+        "accessLevel": 0,
+        "newsID": null,
+        "ExtensionData": null,
+        "headline": null,
+        "publishDate": "/Date(1755154800000-0700)/",
+        "source": null,
+        "author": null,
+        "abstract": null,
+        "content": "09/22/25  Named Wesley Bamburg COO, effective October 13, 2025, replacing Joshua DeTillio who resigned"
+      },
+      "newIsssueDate": null
+    },
+    "fundamentalDataBlock": {
+      "ExtensionData": null,
+      "epsBlock": {
+        "ExtensionData": null,
+        "fiscalYearEnd": 12,
+        "EPSPriceDataList": [
+          {
+            "ExtensionData": null,
+            "date": "/Date(1546243200000-0800)/",
+            "EPS": -84.0,
+            "EPSChg": null,
+            "Price": {
+              "date": "/Date(1546243200000-0800)/",
+              "high": 7500.0,
+              "low": 330.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": false
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1577779200000-0800)/",
+            "EPS": -194.9,
+            "EPSChg": -132.0,
+            "Price": {
+              "date": "/Date(1577779200000-0800)/",
+              "high": 660.0,
+              "low": 141.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": false
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1609401600000-0800)/",
+            "EPS": -118.4,
+            "EPSChg": 39.0,
+            "Price": {
+              "date": "/Date(1609401600000-0800)/",
+              "high": 434.0,
+              "low": 138.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": false
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1640937600000-0800)/",
+            "EPS": 16.5,
+            "EPSChg": 114.0,
+            "Price": {
+              "date": "/Date(1640937600000-0800)/",
+              "high": 746.0,
+              "low": 202.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": false
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1672387200000-0800)/",
+            "EPS": -100.4,
+            "EPSChg": -708.0,
+            "Price": {
+              "date": "/Date(1672387200000-0800)/",
+              "high": 7919.0,
+              "low": 75.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": true
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1703836800000-0800)/",
+            "EPS": -10.39,
+            "EPSChg": 90.0,
+            "Price": {
+              "date": "/Date(1703836800000-0800)/",
+              "high": 317.0,
+              "low": 25.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": true
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1735632000000-0800)/",
+            "EPS": 9.71,
+            "EPSChg": 193.0,
+            "Price": {
+              "date": "/Date(1735632000000-0800)/",
+              "high": 41.0,
+              "low": 4.0,
+              "open": null,
+              "close": null,
+              "dateIndicator": null
+            },
+            "EPSNonRecurringFlag": true
+          }
+        ],
+        "EPSPriceDataEstList": [
+          {
+            "ExtensionData": null,
+            "date": "/Date(1767168000000-0800)/",
+            "EPS": 14.07,
+            "EPSPercChange": 45.0,
+            "EPSDirectionIndicator": 0
+          },
+          {
+            "ExtensionData": null,
+            "date": "/Date(1798704000000-0800)/",
+            "EPS": 21.0,
+            "EPSPercChange": 49.0,
+            "EPSDirectionIndicator": 0
+          }
+        ]
+      },
+      "yieldatioBlock": {
+        "ExtensionData": null,
+        "yield": null,
+        "exDivDate": null,
+        "bookValue": 8.13762,
+        "inventoryTurnOver": 153.82,
+        "upDownVolRatio": 1.32749951,
+        "newCEODate": "/Date(1648796400000-0700)/"
+      },
+      "epsRatingBlock": {
+        "ePSRank": 33,
+        "groupRSRating": 80,
+        "sMRRatingLetter": "A",
+        "aCCDIS": "B+",
+        "cOMPOSITE": 95,
+        "TimelinessRating": "A",
+        "sponsorshipRating": "B"
+      },
+      "epsGrowthRateBlock": {
+        "ExtensionData": null,
+        "growthRate": null,
+        "earningsStability": null,
+        "peRatio": 9.0,
+        "relativePERatio": 0.36,
+        "forwardPE": 8,
+        "fiveYearPE": {
+          "low": 6,
+          "high": 16
+        },
+        "returnOnEquity": 50.22,
+        "roeYear": 0,
+        "cashFlow": 13.1,
+        "cashFlowYear": 0
+      },
+      "miscBlock": {
+        "ExtensionData": null,
+        "debt": 193.0,
+        "rnd": null,
+        "alpha": 0.75,
+        "beta": 1.53,
+        "ownership": {
+          "management": 37.0,
+          "banks": 0.0,
+          "funds": 37.0
+        },
+        "numberOfFunds": [
+          {
+            "ExtensionData": null,
+            "value": 173,
+            "reportedDate": "/Date(1759215600000-0700)/",
+            "calendarDate": null,
+            "fiscalDate": null,
+            "frequency": null,
+            "frequencyNumber": null
+          },
+          {
+            "ExtensionData": null,
+            "value": 150,
+            "reportedDate": "/Date(1751266800000-0700)/",
+            "calendarDate": null,
+            "fiscalDate": null,
+            "frequency": null,
+            "frequencyNumber": null
+          },
+          {
+            "ExtensionData": null,
+            "value": 42,
+            "reportedDate": "/Date(1743404400000-0700)/",
+            "calendarDate": null,
+            "fiscalDate": null,
+            "frequency": null,
+            "frequencyNumber": null
+          },
+          {
+            "ExtensionData": null,
+            "value": 29,
+            "reportedDate": "/Date(1735632000000-0800)/",
+            "calendarDate": null,
+            "fiscalDate": null,
+            "frequency": null,
+            "frequencyNumber": null
+          }
+        ]
+      },
+      "topRSReport": {
+        "content": [
+          {
+            "coName": "HCA Healthcare",
+            "symbol": "HCA",
+            "rLST": 89,
+            "epsRank": 96
+          },
+          {
+            "coName": "TenetHealthcare",
+            "symbol": "THC",
+            "rLST": 87,
+            "epsRank": 94
+          },
+          {
+            "coName": "UniversalHealthB",
+            "symbol": "UHS",
+            "rLST": 85,
+            "epsRank": 93
+          },
+          {
+            "coName": "SelectMedical",
+            "symbol": "SEM",
+            "rLST": 31,
+            "epsRank": 42
+          },
+          {
+            "coName": "SurgeryPartners",
+            "symbol": "SGRY",
+            "rLST": 13,
+            "epsRank": 61
+          }
+        ]
+      },
+      "quarterlyBlock": {
+        "ExtensionData": null,
+        "content": [
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1648710000000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": 1.5,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -83,
+              "ruleList": []
+            },
+            "sales": 79.1,
+            "salesPercChange": -9.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1656572400000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": 1.5,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -80,
+              "ruleList": []
+            },
+            "sales": 58.1,
+            "salesPercChange": -8.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1664521200000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -93.0,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -789,
+              "ruleList": []
+            },
+            "sales": 28.4,
+            "salesPercChange": -76.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1672473600000-0800)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -3.0,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 78,
+              "ruleList": []
+            },
+            "sales": 53.7,
+            "salesPercChange": -15.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1680246000000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -1.19,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -179,
+              "ruleList": []
+            },
+            "sales": 56.3,
+            "salesPercChange": -29.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1688108400000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -0.79,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -153,
+              "ruleList": []
+            },
+            "sales": 58.9,
+            "salesPercChange": 1.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1696057200000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -1.25,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 99,
+              "ruleList": []
+            },
+            "sales": 62.7,
+            "salesPercChange": 121.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1704009600000-0800)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -7.47,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -149,
+              "ruleList": []
+            },
+            "sales": 69.7,
+            "salesPercChange": 30.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1711868400000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -0.08,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 93,
+              "ruleList": []
+            },
+            "sales": 67.5,
+            "salesPercChange": 20.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1719730800000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -0.07,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 91,
+              "ruleList": []
+            },
+            "sales": 76.1,
+            "salesPercChange": 29.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1727679600000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -1.72,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": true
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -38,
+              "ruleList": []
+            },
+            "sales": 78.8,
+            "salesPercChange": 26.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1735632000000-0800)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": 11.12,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 249,
+              "ruleList": []
+            },
+            "sales": 257.6,
+            "salesPercChange": 270.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1743404400000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": 3.33,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 999,
+              "ruleList": []
+            },
+            "sales": 211.8,
+            "salesPercChange": 214.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1751266800000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": -2.95,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": -4114,
+              "ruleList": []
+            },
+            "sales": 244.0,
+            "salesPercChange": 221.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1759215600000-0700)/",
+            "fQuarterlyEarningsReported": false,
+            "eps": {
+              "value": 7.76,
+              "ruleList": [
+                {
+                  "ruleID": null,
+                  "label": "Δ",
+                  "value": false
+                }
+              ]
+            },
+            "epsPercChange": {
+              "value": 551,
+              "ruleList": []
+            },
+            "sales": 267.8,
+            "salesPercChange": 240.0,
+            "isEstimate": null
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1767168000000-0800)/",
+            "fQuarterlyEarningsReported": null,
+            "eps": {
+              "value": 5.56,
+              "ruleList": []
+            },
+            "epsPercChange": {
+              "value": -50.0,
+              "ruleList": []
+            },
+            "sales": 258.8,
+            "salesPercChange": 240.0,
+            "isEstimate": true
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1774940400000-0700)/",
+            "fQuarterlyEarningsReported": null,
+            "eps": {
+              "value": 5.12,
+              "ruleList": []
+            },
+            "epsPercChange": {
+              "value": 100.0,
+              "ruleList": []
+            },
+            "sales": 249.5,
+            "salesPercChange": 0.0,
+            "isEstimate": true
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1782802800000-0700)/",
+            "fQuarterlyEarningsReported": null,
+            "eps": {
+              "value": 5.16,
+              "ruleList": []
+            },
+            "epsPercChange": {
+              "value": 275.0,
+              "ruleList": []
+            },
+            "sales": 245.8,
+            "salesPercChange": 18.0,
+            "isEstimate": true
+          },
+          {
+            "ExtensionData": null,
+            "fiscalQuarterEndDate": "/Date(1790751600000-0700)/",
+            "fQuarterlyEarningsReported": null,
+            "eps": {
+              "value": 5.38,
+              "ruleList": []
+            },
+            "epsPercChange": {
+              "value": -31.0,
+              "ruleList": []
+            },
+            "sales": 250.8,
+            "salesPercChange": 1.0,
+            "isEstimate": true
+          }
+        ]
+      },
+      "msGraphsPageNumber": null
+    },
+    "corpActions": [
+      {
+        "ExtensionData": null,
+        "corpActionType": 1,
+        "date": "/Date(1751266800000-0700)/",
+        "displayValue": "",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      },
+      {
+        "ExtensionData": null,
+        "corpActionType": 1,
+        "date": "/Date(1727679600000-0700)/",
+        "displayValue": "",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      },
+      {
+        "ExtensionData": null,
+        "corpActionType": 8,
+        "date": "/Date(1719990000000-0700)/",
+        "displayValue": "1/10",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      },
+      {
+        "ExtensionData": null,
+        "corpActionType": 1,
+        "date": "/Date(1719730800000-0700)/",
+        "displayValue": "",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      },
+      {
+        "ExtensionData": null,
+        "corpActionType": 8,
+        "date": "/Date(1712732400000-0700)/",
+        "displayValue": "7/100",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      },
+      {
+        "ExtensionData": null,
+        "corpActionType": 1,
+        "date": "/Date(1704009600000-0800)/",
+        "displayValue": "",
+        "price": null,
+        "unitSymbol": null,
+        "scale": null
+      }
+    ],
+    "fiscalMonthEnd": 12,
+    "displayIndicator": 0
+  },
+  "status": {
+    "eventType": 0,
+    "message": null,
+    "reason": null
+  }
+}

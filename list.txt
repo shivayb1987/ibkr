@@ -1,0 +1,596 @@
+{
+   "code" : 200,
+   "data" : {
+      "count" : 42,
+      "list" : "AEM,BTE,CCJ,CLF,CNX,CXW,DINO,DNN,EPD,ET,FCX,FIS,FNV,GGB,LPX,MMM,NXE,OXY,PAAS,PEG,PHYS,PR,RES,SBSW,SLG,STLD,SU,SWN,TFC,TXG,U.UN,UEC,URNJ,URNM,USD,UUUU,VAL,VTLE,WDO,WFRD,WPM,XOM",
+      "orders" : [
+         {
+            "orderDesc" : "Sold 34 Limit 60.49, GTC",
+            "price" : 60.49,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "AEM"
+         },
+         {
+            "orderDesc" : "Sell 275 Stop 3.57, GTC",
+            "price" : 0,
+            "remainingQuantity" : 275,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "BTE"
+         },
+         {
+            "orderDesc" : "Sold 275 Limit 3.63, GTC",
+            "price" : 3.63,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "BTE"
+         },
+         {
+            "orderDesc" : "Sell 275 Limit 4.64, GTC",
+            "price" : 4.64,
+            "remainingQuantity" : 275,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "BTE"
+         },
+         {
+            "orderDesc" : "Sold 55 Stop 46.90, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "CCJ"
+         },
+         {
+            "orderDesc" : "Sold 89 Limit 20.65, GTC",
+            "price" : 20.65,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "CLF"
+         },
+         {
+            "orderDesc" : "Sold 69 Limit 23.37, GTC",
+            "price" : 23.37,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "CNX"
+         },
+         {
+            "orderDesc" : "Sold 143 Limit 15.06, GTC",
+            "price" : 15.06,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "CXW"
+         },
+         {
+            "orderDesc" : "Sold 45 Stop 58.98, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "DINO"
+         },
+         {
+            "orderDesc" : "Sold 2730 Limit 1.99, GTC",
+            "price" : 1.99,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "DNN"
+         },
+         {
+            "orderDesc" : "Sold 60 Limit 28.13, GTC",
+            "price" : 28.13,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "EPD"
+         },
+         {
+            "orderDesc" : "Sold 26 Limit 14.94, GTC",
+            "price" : 14.94,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "ET"
+         },
+         {
+            "orderDesc" : "Sell 47 Stop 41.56, GTC",
+            "price" : 0,
+            "remainingQuantity" : 47,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FCX"
+         },
+         {
+            "orderDesc" : "Sell 47 Limit 54.12, GTC",
+            "price" : 54.12,
+            "remainingQuantity" : 47,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FCX"
+         },
+         {
+            "orderDesc" : "Sold 53 Limit 70.35, GTC",
+            "price" : 70.35,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FIS"
+         },
+         {
+            "orderDesc" : "Sell 22 Stop 110.95, GTC",
+            "price" : 0,
+            "remainingQuantity" : 22,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FNV"
+         },
+         {
+            "orderDesc" : "Sell 22 Limit 135.06, GTC",
+            "price" : 135.06,
+            "remainingQuantity" : 22,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FNV"
+         },
+         {
+            "orderDesc" : "Sell 22 Limit 135.06, GTC",
+            "price" : 135.06,
+            "remainingQuantity" : 22,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FNV"
+         },
+         {
+            "orderDesc" : "Sell 22 Stop 111.93, GTC",
+            "price" : 0,
+            "remainingQuantity" : 22,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "FNV"
+         },
+         {
+            "orderDesc" : "Sell 646 Stop 4.30, GTC",
+            "price" : 0,
+            "remainingQuantity" : 646,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "GGB"
+         },
+         {
+            "orderDesc" : "Sell 646 Limit 4.93, GTC",
+            "price" : 4.93,
+            "remainingQuantity" : 646,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "GGB"
+         },
+         {
+            "orderDesc" : "Buy 646 Stop 4.53 LMT 4.54, GTC",
+            "price" : 4.54,
+            "remainingQuantity" : 646,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "GGB"
+         },
+         {
+            "orderDesc" : "Sold 26 Stop 75.15, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "LPX"
+         },
+         {
+            "orderDesc" : "Sold 17 Stop 75.15, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "LPX"
+         },
+         {
+            "orderDesc" : "Sell 21 Stop 89.55, GTC",
+            "price" : 0,
+            "remainingQuantity" : 21,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "MMM"
+         },
+         {
+            "orderDesc" : "Sell 21 Limit 108.72, GTC",
+            "price" : 108.72,
+            "remainingQuantity" : 21,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "MMM"
+         },
+         {
+            "orderDesc" : "Buy 21 Stop 94.41 LMT 94.69, GTC",
+            "price" : 94.69,
+            "remainingQuantity" : 21,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "MMM"
+         },
+         {
+            "orderDesc" : "Sold 752 Limit 7.65, GTC",
+            "price" : 7.65,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "NXE"
+         },
+         {
+            "orderDesc" : "Sold 26 Limit 65.36, GTC",
+            "price" : 65.36,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "OXY"
+         },
+         {
+            "orderDesc" : "Sell 100 Limit 20.94, GTC",
+            "price" : 20.94,
+            "remainingQuantity" : 100,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PAAS"
+         },
+         {
+            "orderDesc" : "Sell 100 Stop 17.61, GTC",
+            "price" : 0,
+            "remainingQuantity" : 100,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PAAS"
+         },
+         {
+            "orderDesc" : "Sold 31 Limit 63.97, GTC",
+            "price" : 63.97,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PEG"
+         },
+         {
+            "orderDesc" : "Sell 264 Limit 19.68, GTC",
+            "price" : 19.68,
+            "remainingQuantity" : 264,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PHYS"
+         },
+         {
+            "orderDesc" : "Sell 264 Stop 16.64, GTC",
+            "price" : 0,
+            "remainingQuantity" : 264,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PHYS"
+         },
+         {
+            "orderDesc" : "Sold 106 Limit 17.30, GTC",
+            "price" : 17.3,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "PR"
+         },
+         {
+            "orderDesc" : "Sold 362 Limit 7.62, GTC",
+            "price" : 7.62,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "RES"
+         },
+         {
+            "orderDesc" : "Sold 160 Limit 5.19, GTC",
+            "price" : 5.19,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SBSW"
+         },
+         {
+            "orderDesc" : "Sold 22 Stop 49.08, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SLG"
+         },
+         {
+            "orderDesc" : "Sell 9 Stop 131.42, GTC",
+            "price" : 0,
+            "remainingQuantity" : 9,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "STLD"
+         },
+         {
+            "orderDesc" : "Sold 9 Limit 137.42, GTC",
+            "price" : 137.42,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "STLD"
+         },
+         {
+            "orderDesc" : "Sell 9 Limit 158.19, GTC",
+            "price" : 158.19,
+            "remainingQuantity" : 9,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "STLD"
+         },
+         {
+            "orderDesc" : "Sell 72 Stop 35.29, GTC",
+            "price" : 0,
+            "remainingQuantity" : 72,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SU"
+         },
+         {
+            "orderDesc" : "Sell 36 Limit 42.90, GTC",
+            "price" : 42.9,
+            "remainingQuantity" : 36,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SU"
+         },
+         {
+            "orderDesc" : "Sell 297 Stop 6.86, GTC",
+            "price" : 0,
+            "remainingQuantity" : 297,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SWN"
+         },
+         {
+            "orderDesc" : "Sell 149 Limit 7.99, GTC",
+            "price" : 7.99,
+            "remainingQuantity" : 149,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SWN"
+         },
+         {
+            "orderDesc" : "Sold 297 Limit 7.16, GTC",
+            "price" : 7.16,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "SWN"
+         },
+         {
+            "orderDesc" : "Sold 59 Stop 36.57, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "TFC"
+         },
+         {
+            "orderDesc" : "Sell 109 Stop 17.95, GTC",
+            "price" : 0,
+            "remainingQuantity" : 109,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "TXG"
+         },
+         {
+            "orderDesc" : "Sell 109 Limit 22.25, GTC",
+            "price" : 22.25,
+            "remainingQuantity" : 109,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "TXG"
+         },
+         {
+            "orderDesc" : "Sold 154 Limit 27.60, GTC",
+            "price" : 27.6,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "U.UN"
+         },
+         {
+            "orderDesc" : "Sold 183 Stop 27.86, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "U.UN"
+         },
+         {
+            "orderDesc" : "Sold 381 Limit 6.80, GTC",
+            "price" : 6.8,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "UEC"
+         },
+         {
+            "orderDesc" : "Sold 146 Stop 24.66, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "URNJ"
+         },
+         {
+            "orderDesc" : "Sold 73 Limit 48.84, GTC",
+            "price" : 48.84,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "URNM"
+         },
+         {
+            "orderDesc" : "Bought 7326.81 Market, Day",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "USD"
+         },
+         {
+            "orderDesc" : "Bought 6201.75 Market, Day",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "USD"
+         },
+         {
+            "orderDesc" : "Bought 8465.73 Market, Day",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "USD"
+         },
+         {
+            "orderDesc" : "Sold 338 Stop 5.97, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "UUUU"
+         },
+         {
+            "orderDesc" : "Sold 111 Limit 69.02, GTC",
+            "price" : 69.02,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "VAL"
+         },
+         {
+            "orderDesc" : "Sold 16 Limit 54.18, GTC",
+            "price" : 54.18,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "VTLE"
+         },
+         {
+            "orderDesc" : "Sold 665 Stop 9.95, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "WDO"
+         },
+         {
+            "orderDesc" : "Sold 9 Stop 115.05, GTC",
+            "price" : 0,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "WFRD"
+         },
+         {
+            "orderDesc" : "Sold 40 Limit 49.95, GTC",
+            "price" : 49.95,
+            "remainingQuantity" : 0,
+            "status" : "Filled",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "WPM"
+         },
+         {
+            "orderDesc" : "Sell 30 Stop 113.44, GTC",
+            "price" : 0,
+            "remainingQuantity" : 30,
+            "status" : "PreSubmitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "XOM"
+         },
+         {
+            "orderDesc" : "Sell 30 Limit 142.46, GTC",
+            "price" : 142.46,
+            "remainingQuantity" : 30,
+            "status" : "Submitted",
+            "stopLossPercent" : "",
+            "targetPercent" : "",
+            "ticker" : "XOM"
+         }
+      ],
+      "totalOrderAmount" : 4921.33
+   },
+   "status" : "SUCCESS"
+}

@@ -1,0 +1,72 @@
+{
+  "code": 200,
+  "status": "SUCCESS",
+  "data": {
+    "list": {
+      "2025/09/22": [
+        "rec TEM -27 97.05 2025/09/22",
+        "rec RLX -1561 2.482 2025/09/22"
+      ]
+    },
+    "trades": [
+      {
+        "execution_id": "000137fd.68d14d8a.01.01",
+        "symbol": "TEM",
+        "supports_tax_opt": "1",
+        "side": "S",
+        "order_description": "Sold 27 @ 97.05 on NASDAQ",
+        "trade_time": "20250922-13:34:43",
+        "trade_time_r": 1758548083000,
+        "size": 27,
+        "price": "97.05",
+        "order_ref": "",
+        "submitter": "",
+        "exchange": "NASDAQ",
+        "commission": "1.1",
+        "net_amount": 2620.35,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "TEMPUS AI INC",
+        "contract_description_1": "TEM",
+        "sec_type": "STK",
+        "listing_exchange": "NASDAQ.NMS",
+        "conid": 709237125,
+        "conidEx": "709237125",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      },
+      {
+        "execution_id": "00030f00.68d174f8.01.01",
+        "symbol": "RLX",
+        "supports_tax_opt": "1",
+        "side": "S",
+        "order_description": "Sold 1561 @ 2.482 on DARK",
+        "trade_time": "20250922-13:44:22",
+        "trade_time_r": 1758548662000,
+        "size": 1561,
+        "price": "2.482",
+        "order_ref": "",
+        "submitter": "",
+        "exchange": "DARK",
+        "commission": "8.83",
+        "net_amount": 3874.402,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "RLX TECHNOLOGY INC-ADR",
+        "contract_description_1": "RLX",
+        "sec_type": "STK",
+        "listing_exchange": "NYSE",
+        "conid": 466739489,
+        "conidEx": "466739489",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      }
+    ]
+  }
+}

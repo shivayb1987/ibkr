@@ -1,0 +1,1265 @@
+-> GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+<- 200 GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+-> GET /css/bootstrap-5.2.2/bootstrap.min.css
+-> GET /css/reg-am/login.min.css
+-> GET /css/ibkr/theme-ibkr-portal.min.css
+-> GET /css/fontawesome-6.4.2/all.min.css
+-> GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+-> GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /css/bootstrap-5.2.2/bootstrap.min.css
+<- 200 GET /css/ibkr/theme-ibkr-portal.min.css
+<- 200 GET /css/fontawesome-6.4.2/all.min.css
+-> GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+-> GET /sso/lib/xyz.bundle.min.js
+<- 200 GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+<- 200 GET /sso/lib/xyz.bundle.min.js
+<- 200 GET /css/reg-am/login.min.css
+<- 200 GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+-> GET /images/common/logos/ibkr/interactive-brokers.svg
+-> GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+<- 200 GET /images/common/logos/ibkr/interactive-brokers.svg
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+<- 200 GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+-> POST /portal.proxy/v1/gstat/bulletins
+-> POST /sso/report
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+-> GET /images/web/favicons/home-screen-icon-128x128.png
+<- 200 GET /images/web/favicons/home-screen-icon-128x128.png
+<- 204 POST /portal.proxy/v1/gstat/bulletins
+<- 200 POST /sso/report
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Dispatcher
+<- 302 POST /sso/Dispatcher
+-> request: /v1/api/sso/validate?gw=1
+-> GET /v1/api/sso/validate?gw=1,200|520ms
+-> request: /v1/api/one/user
+-> request: /v1/api/ssodh/init
+-> sso GET https://api.ibkr.com/v1/api/ssodh/init
+-> GET /v1/api/one/user,200|382ms
+-> request: /v1/api/ssodh/st
+-> sso GET https://api.ibkr.com/v1/api/ssodh/st
+-> POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+<- 200 POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+-> GET /v1/api/iserver/account/orders
+<- 500 GET /v1/api/iserver/account/orders
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/iserver/auth/status
+-> GET /v1/api/iserver/auth/status,200|80ms
+-> request: /v1/api/iserver/accounts
+-> GET /v1/api/iserver/accounts,200|76ms
+-> GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/trades
+<- 200 GET /v1/api/iserver/account/trades
+-> GET /v1/api/iserver/account/trades
+<- 200 GET /v1/api/iserver/account/trades
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|152ms
+-> GET /v1/api/iserver/account/trades
+<- 200 GET /v1/api/iserver/account/trades
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|79ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|217ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|158ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|89ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|84ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|112ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|99ms
+-> request: /sso/ping
+-> GET /sso/ping,200|331ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|118ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|125ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|123ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|83ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|65ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|77ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|106ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|64ms
+-> request: /sso/ping
+-> GET /sso/ping,200|342ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|314ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|113ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|77ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|88ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|60ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|71ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> GET /v1/api/iserver/secdef/search?symbol=MAMA&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=MAMA&secType=STK
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|89ms
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/secdef/search?symbol=MAMA&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=MAMA&secType=STK
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> POST /v1/api/iserver/account/U5799398/orders
+<- 200 POST /v1/api/iserver/account/U5799398/orders
+-> POST /v1/api/iserver/reply/08758e63-5dd2-467a-9d67-4ec9cda0ff8e
+<- 200 POST /v1/api/iserver/reply/08758e63-5dd2-467a-9d67-4ec9cda0ff8e
+-> POST /v1/api/iserver/reply/e1018783-f289-4e23-b586-1fe4dc9aa4fa
+<- 200 POST /v1/api/iserver/reply/e1018783-f289-4e23-b586-1fe4dc9aa4fa
+-> POST /v1/api/iserver/reply/2e371da1-5a28-42bd-9fc0-9a16f4045b8e
+<- 200 POST /v1/api/iserver/reply/2e371da1-5a28-42bd-9fc0-9a16f4045b8e
+-> POST /v1/api/iserver/reply/5a85b705-2f04-40d3-9c7e-41fe5c6aec00
+<- 200 POST /v1/api/iserver/reply/5a85b705-2f04-40d3-9c7e-41fe5c6aec00
+-> POST /v1/api/iserver/reply/9ccbcd7e-9ddf-4851-bb22-9793efe89da4
+<- 200 POST /v1/api/iserver/reply/9ccbcd7e-9ddf-4851-bb22-9793efe89da4
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=123882197&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=123882197&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=123882197&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=123882197&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|55ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|78ms
+-> request: /sso/ping
+-> GET /sso/ping,200|290ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|119ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|56ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|153ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|73ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|54ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|96ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|97ms
+-> request: /sso/ping
+-> GET /sso/ping,200|482ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|57ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|113ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|231ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|64ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/286524230
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/286524230
+-> DELETE /v1/api/iserver/account/U5799398/order/286524231
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/286524231
+-> DELETE /v1/api/iserver/account/U5799398/order/286524232
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/286524232
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/132108344
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/132108344
+-> DELETE /v1/api/iserver/account/U5799398/order/132108343
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/132108343
+-> DELETE /v1/api/iserver/account/U5799398/order/132108342
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/132108342
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/177393710
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/177393710
+-> DELETE /v1/api/iserver/account/U5799398/order/177393711
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/177393711
+-> DELETE /v1/api/iserver/account/U5799398/order/177393709
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/177393709
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/758547494
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/758547494
+-> DELETE /v1/api/iserver/account/U5799398/order/758547495
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/758547495
+-> DELETE /v1/api/iserver/account/U5799398/order/758547493
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|96ms
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/758547493
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/281725798
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/281725798
+-> DELETE /v1/api/iserver/account/U5799398/order/281725796
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/281725796
+-> DELETE /v1/api/iserver/account/U5799398/order/281725797
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/281725797
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/132108347
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/132108347
+-> DELETE /v1/api/iserver/account/U5799398/order/132108346
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/132108346
+-> DELETE /v1/api/iserver/account/U5799398/order/132108345
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/132108345
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/515644892
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/515644892
+-> DELETE /v1/api/iserver/account/U5799398/order/515644893
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/515644893
+-> DELETE /v1/api/iserver/account/U5799398/order/515644891
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/515644891
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/2114802829
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/2114802829
+-> DELETE /v1/api/iserver/account/U5799398/order/2114802831
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/2114802831
+-> DELETE /v1/api/iserver/account/U5799398/order/2114802830
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/2114802830
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206515
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/1848206515
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206517
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/1848206517
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206516
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/1848206516
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/2143754826
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/2143754826
+-> DELETE /v1/api/iserver/account/U5799398/order/2143754825
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/2143754825
+-> DELETE /v1/api/iserver/account/U5799398/order/2143754824
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/2143754824
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206459
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/1848206459
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206458
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/1848206458
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206460
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/1848206460
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/286524228
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/286524228
+-> DELETE /v1/api/iserver/account/U5799398/order/286524229
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/286524229
+-> DELETE /v1/api/iserver/account/U5799398/order/286524227
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/286524227
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|73ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> request: /sso/ping
+-> GET /sso/ping,200|335ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|70ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|56ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|89ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|162ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|93ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|93ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|112ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|136ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|85ms
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> request: /sso/ping
+-> GET /sso/ping,200|375ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|99ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|64ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|53ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|85ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206486
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/1848206486
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206487
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/1848206487
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/1848206488
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/1848206488
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/286523797
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/286523797
+-> DELETE /v1/api/iserver/account/U5799398/order/286523798
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/286523798
+-> DELETE /v1/api/iserver/account/U5799398/order/286523799
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/286523799
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|90ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|74ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|76ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> DELETE /v1/api/iserver/account/U5799398/order/2069454544
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/2069454544
+-> DELETE /v1/api/iserver/account/U5799398/order/2069454543
+<- 400 DELETE /v1/api/iserver/account/U5799398/order/2069454543
+-> DELETE /v1/api/iserver/account/U5799398/order/2069454542
+<- 200 DELETE /v1/api/iserver/account/U5799398/order/2069454542
+-> request: /sso/ping
+-> GET /sso/ping,200|369ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|53ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|95ms
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/secdef/search?symbol=CTAS&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=CTAS&secType=STK
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> POST /v1/api/iserver/account/U5799398/orders
+<- 200 POST /v1/api/iserver/account/U5799398/orders
+-> POST /v1/api/iserver/reply/6712e541-0e00-4b24-869d-75c348017c46
+<- 200 POST /v1/api/iserver/reply/6712e541-0e00-4b24-869d-75c348017c46
+-> POST /v1/api/iserver/reply/10f9849c-b5b7-4137-875c-d8dfd1d36b7f
+<- 200 POST /v1/api/iserver/reply/10f9849c-b5b7-4137-875c-d8dfd1d36b7f
+-> POST /v1/api/iserver/reply/65d2150b-3362-45ff-ac7d-b48a5e91fb78
+<- 200 POST /v1/api/iserver/reply/65d2150b-3362-45ff-ac7d-b48a5e91fb78
+-> POST /v1/api/iserver/reply/3f832886-2aa4-4420-ab66-3359b55f7dec
+<- 200 POST /v1/api/iserver/reply/3f832886-2aa4-4420-ab66-3359b55f7dec
+-> POST /v1/api/iserver/reply/bee266e4-a976-49e0-9c04-109885e0a79d
+<- 200 POST /v1/api/iserver/reply/bee266e4-a976-49e0-9c04-109885e0a79d
+-> POST /v1/api/iserver/reply/04575cac-b88f-4080-8693-1e3eae182116
+<- 200 POST /v1/api/iserver/reply/04575cac-b88f-4080-8693-1e3eae182116
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=268149&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|151ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|118ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|88ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|117ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|83ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|83ms
+-> request: /sso/ping
+-> GET /sso/ping,200|270ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|65ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|61ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|95ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|89ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|100ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/974920092
+<- 200 POST /v1/api/iserver/account/U5799398/order/974920092
+-> POST /v1/api/iserver/reply/4fff4384-25ba-4079-a4b0-e14ec20e4b94
+<- 200 POST /v1/api/iserver/reply/4fff4384-25ba-4079-a4b0-e14ec20e4b94
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=31832526&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=31832526&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=31832526&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=31832526&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|180ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|181ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/658676822
+<- 200 POST /v1/api/iserver/account/U5799398/order/658676822
+-> POST /v1/api/iserver/reply/33b41adc-25e4-48bc-90fa-9eb5c9b74b21
+<- 200 POST /v1/api/iserver/reply/33b41adc-25e4-48bc-90fa-9eb5c9b74b21
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=12374&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=12374&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=12374&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=12374&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|148ms
+-> request: /sso/ping
+-> GET /sso/ping,200|464ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|90ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|85ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|115ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|123ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|74ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1833693389
+<- 200 POST /v1/api/iserver/account/U5799398/order/1833693389
+-> POST /v1/api/iserver/reply/48b83677-75d1-422d-bc09-208f72a7e195
+<- 200 POST /v1/api/iserver/reply/48b83677-75d1-422d-bc09-208f72a7e195
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=273165&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=273165&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=273165&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=273165&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|75ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/343587882
+<- 200 POST /v1/api/iserver/account/U5799398/order/343587882
+-> POST /v1/api/iserver/reply/d5a035c7-a6aa-4a03-9c0f-46053ae66d8c
+<- 200 POST /v1/api/iserver/reply/d5a035c7-a6aa-4a03-9c0f-46053ae66d8c
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/tickle,200|59ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|98ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1272000587
+<- 200 POST /v1/api/iserver/account/U5799398/order/1272000587
+-> POST /v1/api/iserver/reply/42aaa85e-f7c3-4243-9eb1-10c60d731568
+<- 200 POST /v1/api/iserver/reply/42aaa85e-f7c3-4243-9eb1-10c60d731568
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=108649896&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=108649896&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=108649896&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=108649896&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /sso/ping
+-> GET /sso/ping,200|503ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|68ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|144ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|96ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|70ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|111ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|75ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1198175565
+-> request: /sso/ping
+<- 200 POST /v1/api/iserver/account/U5799398/order/1198175565
+-> POST /v1/api/iserver/reply/791f41b3-c74b-46f3-8bcb-bbea2e42e8d7
+<- 200 POST /v1/api/iserver/reply/791f41b3-c74b-46f3-8bcb-bbea2e42e8d7
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /sso/ping,200|305ms
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|95ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|60ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1198175564
+<- 200 POST /v1/api/iserver/account/U5799398/order/1198175564
+-> POST /v1/api/iserver/reply/37a735a7-1203-4362-a8f4-11b3512e867f
+<- 200 POST /v1/api/iserver/reply/37a735a7-1203-4362-a8f4-11b3512e867f
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|73ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|75ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/343587882
+<- 200 POST /v1/api/iserver/account/U5799398/order/343587882
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=359130923&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|79ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|70ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|137ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|108ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|75ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|55ms
+-> request: /sso/ping
+-> GET /sso/ping,200|354ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|70ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|106ms
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> GET /v1/api/iserver/secdef/search?symbol=REMX&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=REMX&secType=STK
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> POST /v1/api/iserver/account/U5799398/orders
+<- 200 POST /v1/api/iserver/account/U5799398/orders
+-> POST /v1/api/iserver/reply/243583f9-83f8-4c3c-a96f-fa65e6be7fb7
+<- 200 POST /v1/api/iserver/reply/243583f9-83f8-4c3c-a96f-fa65e6be7fb7
+-> POST /v1/api/iserver/reply/dcf3483b-7a9d-4825-8e64-ce3eb90b50cb
+<- 200 POST /v1/api/iserver/reply/dcf3483b-7a9d-4825-8e64-ce3eb90b50cb
+-> POST /v1/api/iserver/reply/6ed08150-3d71-440c-84a1-c58e99287d24
+<- 200 POST /v1/api/iserver/reply/6ed08150-3d71-440c-84a1-c58e99287d24
+-> POST /v1/api/iserver/reply/00123ecc-6788-438a-8ba0-54df7b89d38e
+<- 200 POST /v1/api/iserver/reply/00123ecc-6788-438a-8ba0-54df7b89d38e
+-> POST /v1/api/iserver/reply/b68203fd-6e35-48ac-b98d-b8cb64433614
+<- 200 POST /v1/api/iserver/reply/b68203fd-6e35-48ac-b98d-b8cb64433614
+-> POST /v1/api/iserver/reply/03b36c52-5a79-4fde-bb3a-6f0d46a2bd70
+<- 200 POST /v1/api/iserver/reply/03b36c52-5a79-4fde-bb3a-6f0d46a2bd70
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/520721154
+<- 200 POST /v1/api/iserver/account/U5799398/order/520721154
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=415578518&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|99ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|80ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|85ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|68ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|71ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|89ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1198175476
+<- 200 POST /v1/api/iserver/account/U5799398/order/1198175476
+-> POST /v1/api/iserver/reply/2096924e-f651-4668-b664-53e4cc41cfd3
+<- 200 POST /v1/api/iserver/reply/2096924e-f651-4668-b664-53e4cc41cfd3
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=196689572&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=196689572&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=196689572&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=196689572&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /sso/ping
+-> GET /sso/ping,200|276ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|60ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|61ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|141ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|152ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|86ms
+-> GET /v1/api/logout
+<- 200 GET /v1/api/logout
+-> GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+<- 200 GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+-> GET /css/bootstrap-5.2.2/bootstrap.min.css
+-> GET /css/reg-am/login.min.css
+-> GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+-> GET /css/ibkr/theme-ibkr-portal.min.css
+-> GET /css/fontawesome-6.4.2/all.min.css
+-> GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /css/reg-am/login.min.css
+<- 200 GET /css/ibkr/theme-ibkr-portal.min.css
+<- 200 GET /css/bootstrap-5.2.2/bootstrap.min.css
+-> GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+-> GET /sso/lib/xyz.bundle.min.js
+<- 200 GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /css/fontawesome-6.4.2/all.min.css
+<- 200 GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+<- 200 GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+<- 200 GET /sso/lib/xyz.bundle.min.js
+-> GET /images/common/logos/ibkr/interactive-brokers.svg
+-> GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+<- 200 GET /images/common/logos/ibkr/interactive-brokers.svg
+-> POST /sso/report
+-> POST /portal.proxy/v1/gstat/bulletins
+<- 200 GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+-> GET /images/web/favicons/home-screen-icon-128x128.png
+<- 204 POST /portal.proxy/v1/gstat/bulletins
+<- 200 GET /images/web/favicons/home-screen-icon-128x128.png
+<- 200 POST /sso/report
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Dispatcher
+<- 302 POST /sso/Dispatcher
+-> request: /v1/api/sso/validate?gw=1
+-> GET /v1/api/sso/validate?gw=1,200|495ms
+-> request: /v1/api/one/user
+-> request: /v1/api/ssodh/init
+-> sso GET https://api.ibkr.com/v1/api/ssodh/init
+-> GET /v1/api/one/user,200|321ms
+-> request: /v1/api/ssodh/st
+-> sso GET https://api.ibkr.com/v1/api/ssodh/st
+-> request: /v1/api/iserver/auth/status
+-> GET /v1/api/iserver/auth/status,200|347ms
+-> request: /v1/api/iserver/auth/ssodh/init
+-> POST https://api.ibkr.com/v1/api/iserver/auth/ssodh/init,200|330ms
+-> request: /v1/api/iserver/accounts
+-> GET /v1/api/iserver/accounts,200|62ms
+-> POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+<- 200 POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> GET /v1/api/iserver/secdef/search?symbol=SOLS&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=SOLS&secType=STK
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+<- 200 GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/portfolio/U5799398/positions/0?direction=a&period=1W&sort=position
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|65ms
+-> GET /v1/api/iserver/secdef/search?symbol=SOLS&secType=STK
+<- 200 GET /v1/api/iserver/secdef/search?symbol=SOLS&secType=STK
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/portfolio/U5799398/summary
+<- 200 GET /v1/api/portfolio/U5799398/summary
+-> POST /v1/api/iserver/account/U5799398/orders
+<- 200 POST /v1/api/iserver/account/U5799398/orders
+-> POST /v1/api/iserver/reply/43c26fed-60be-4488-82bd-0a734d49c1da
+<- 200 POST /v1/api/iserver/reply/43c26fed-60be-4488-82bd-0a734d49c1da
+-> POST /v1/api/iserver/reply/4d0db219-3185-478d-9982-8b94169739aa
+<- 200 POST /v1/api/iserver/reply/4d0db219-3185-478d-9982-8b94169739aa
+-> POST /v1/api/iserver/reply/c86ffdb0-a411-4995-bef6-79be18fdb658
+<- 200 POST /v1/api/iserver/reply/c86ffdb0-a411-4995-bef6-79be18fdb658
+-> POST /v1/api/iserver/reply/63c02cad-ab9d-4cae-b4a6-26186b243a53
+<- 200 POST /v1/api/iserver/reply/63c02cad-ab9d-4cae-b4a6-26186b243a53
+-> POST /v1/api/iserver/reply/e7be2099-6a7e-4dc3-ade1-5e346b6b1d7e
+<- 200 POST /v1/api/iserver/reply/e7be2099-6a7e-4dc3-ade1-5e346b6b1d7e
+-> POST /v1/api/iserver/reply/5f26ae5d-5fd9-40bb-b982-7e08e4713986
+<- 200 POST /v1/api/iserver/reply/5f26ae5d-5fd9-40bb-b982-7e08e4713986
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> request: /v1/api/tickle
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/tickle,200|241ms
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/882479291
+<- 200 POST /v1/api/iserver/account/U5799398/order/882479291
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=822454680&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|87ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/177394157
+<- 200 POST /v1/api/iserver/account/U5799398/order/177394157
+-> POST /v1/api/iserver/reply/113f7398-d5b8-49a1-8ffc-7aaaa4e826c8
+<- 200 POST /v1/api/iserver/reply/113f7398-d5b8-49a1-8ffc-7aaaa4e826c8
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=47965865&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=47965865&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=47965865&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=47965865&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|61ms
+-> GET /v1/api/logout
+<- 200 GET /v1/api/logout
+-> GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+<- 200 GET /sso/Login?forwardTo=22&RL=1&ip2loc=US
+-> GET /css/bootstrap-5.2.2/bootstrap.min.css
+-> GET /css/fontawesome-6.4.2/all.min.css
+-> GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+-> GET /css/reg-am/login.min.css
+-> GET /css/ibkr/theme-ibkr-portal.min.css
+-> GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /css/bootstrap-5.2.2/bootstrap.min.css
+-> GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+<- 200 GET /css/fontawesome-6.4.2/all.min.css
+-> GET /sso/lib/xyz.bundle.min.js
+<- 200 GET /css/reg-am/login.min.css
+<- 200 GET /scripts/common/js/bootstrap-5.2.2/bootstrap.bundle.min.js
+<- 200 GET /css/bootstrap-switch-3.3.2/bootstrap-switch.min.css
+<- 200 GET /css/ibkr/theme-ibkr-portal.min.css
+<- 200 GET /scripts/common/js/jquery-3.7.0/jquery.min.js
+<- 200 GET /sso/lib/xyz.bundle.min.js
+-> GET /images/common/logos/ibkr/interactive-brokers.svg
+<- 200 GET /images/common/logos/ibkr/interactive-brokers.svg
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+-> GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+-> GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+-> POST /sso/report
+-> POST /portal.proxy/v1/gstat/bulletins
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-brands-400.woff2
+<- 200 GET /fonts/fontawesome-6.4.2/webfonts/fa-solid-900.woff2
+<- 200 GET /fonts/proxima-nova/Proxima-Nova-Regular.woff2
+-> GET /images/web/favicons/home-screen-icon-128x128.png
+<- 200 POST /portal.proxy/v1/gstat/bulletins
+<- 200 GET /images/web/favicons/home-screen-icon-128x128.png
+<- 200 POST /sso/report
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Authenticator
+<- 200 POST /sso/Authenticator
+-> POST /sso/Dispatcher
+<- 302 POST /sso/Dispatcher
+-> request: /v1/api/sso/validate?gw=1
+-> GET /v1/api/sso/validate?gw=1,200|815ms
+-> request: /v1/api/one/user
+-> request: /v1/api/ssodh/init
+-> sso GET https://api.ibkr.com/v1/api/ssodh/init
+-> GET /v1/api/one/user,200|323ms
+-> request: /v1/api/ssodh/st
+-> sso GET https://api.ibkr.com/v1/api/ssodh/st
+-> request: /v1/api/iserver/auth/status
+-> GET /v1/api/iserver/auth/status,200|61ms
+-> request: /v1/api/iserver/auth/ssodh/init
+-> POST https://api.ibkr.com/v1/api/iserver/auth/ssodh/init,200|330ms
+-> request: /v1/api/iserver/accounts
+-> GET /v1/api/iserver/accounts,200|52ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|69ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|77ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|71ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|120ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|131ms
+-> POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+<- 200 POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|90ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|54ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|294ms
+-> request: /sso/ping
+-> GET /sso/ping,200|531ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|74ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|59ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|92ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|293ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|81ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|68ms
+-> GET /v1/api/iserver/account/trades
+<- 200 GET /v1/api/iserver/account/trades
+-> GET /v1/api/iserver/account/trades
+<- 200 GET /v1/api/iserver/account/trades
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|218ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|85ms
+-> request: /sso/ping
+-> GET /sso/ping,200|368ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|90ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|81ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|316ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|74ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|74ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|336ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|337ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|96ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|65ms
+-> request: /sso/ping
+-> GET /sso/ping,200|399ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|118ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|58ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|309ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|56ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|75ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|77ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|59ms
+-> request: /sso/ping
+-> GET /sso/ping,200|325ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|55ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|333ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|56ms
+-> request: /v1/api/tickle
+-> request: /v1/api/tickle
+-> request: /v1/api/tickle
+-> request: /v1/api/tickle
+-> request: /v1/api/tickle
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|237ms
+-> request: /sso/ping
+-> GET /sso/ping,200|375ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|84ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|88ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|71ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|73ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|60ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|77ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|60ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|63ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|93ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|62ms
+-> request: /sso/ping
+-> GET /sso/ping,200|299ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|67ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|107ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|80ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|139ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|183ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|142ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|149ms
+-> GET /v1/api/iserver/account/orders
+<- 400 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 400 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+<- 200 POST /v1/api/iserver/auth/ssodh/init?publish=true&compete=true
+-> GET /v1/api/iserver/account/orders
+<- 500 GET /v1/api/iserver/account/orders
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|195ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|72ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|188ms
+-> request: /sso/ping
+-> GET /sso/ping,200|321ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|66ms
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1198175565
+<- 200 POST /v1/api/iserver/account/U5799398/order/1198175565
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> POST /v1/api/iserver/account/U5799398/order/1198175565
+<- 200 POST /v1/api/iserver/account/U5799398/order/1198175565
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+<- 200 GET /v1/api/iserver/marketdata/history?conid=239037320&period=30d&bar=1d&outsideRth=false
+-> GET /v1/api/iserver/account/orders
+<- 200 GET /v1/api/iserver/account/orders
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|87ms
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|73ms
+-> POST /v1/api/tickle
+<- 200 POST /v1/api/tickle
+-> request: /v1/api/tickle
+-> GET /v1/api/tickle,200|143ms

@@ -1,0 +1,3 @@
+document.getElementById("xyz-field-username").value = "pragu1020"
+document.getElementById("xyz-field-password").value = "Aggu102020"
+document.querySelectorAll('[type="submit"]')[0].click()

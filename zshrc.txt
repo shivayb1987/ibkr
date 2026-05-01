@@ -1,0 +1,413 @@
+# If you come from bash you might have to change your $PATH.
+# export PATH=$HOME/bin:/usr/local/bin:$PATH
+
+export FZF_DEFAULT_COMMAND='rg --files'
+
+export PATH=$HOME/Library/Python/3.10/bin:$PATH
+
+#use Neovim as "preferred editor"
+export VISUAL=nvim
+
+#Use Neovim instead of Vim of Vi
+alias vim=nvim
+alias vi=nvim
+
+export VIMCONFIG=~/.config/nvim
+export VIMDATA=~/.local/share/nvim
+
+# Path to your oh-my-zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# Set name of the theme to load --- if set to "random", it will
+# load a random theme each time oh-my-zsh is loaded, in which case,
+# to know which specific one was loaded, run: echo $RANDOM_THEME
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME="robbyrussell"
+
+# Set list of themes to pick from when loading at random
+# Setting this variable when ZSH_THEME=random will cause zsh to load
+# a theme from this variable instead of looking in $ZSH/themes/
+# If set to an empty array, this variable will have no effect.
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment one of the following lines to change the auto-update behavior
+# zstyle ':omz:update' mode disabled  # disable automatic updates
+# zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+
+# Uncomment the following line to change how often to auto-update (in days).
+# zstyle ':omz:update' frequency 13
+
+# Uncomment the following line if pasting URLs and other text is messed up.
+# DISABLE_MAGIC_FUNCTIONS="true"
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# You can also set it to another string to have that shown instead of the default red dots.
+# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
+# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# You can set one of the optional three formats:
+# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# or set a custom format using the strftime function format specifications,
+# see 'man strftime' for details.
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(git)
+
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Preferred editor for local and remote sessions
+# if [[ -n $SSH_CONNECTION ]]; then
+#   export EDITOR='vim'
+# else
+#   export EDITOR='mvim'
+# fi
+
+# Compilation flags
+# export ARCHFLAGS="-arch x86_64"
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+
+alias ktl="kubectl"
+alias ups="git push --set-upstream origin"
+alias uat="gbd uat; gco master; gl; gco -b uat; ups uat"
+
+gcof() {
+    gco feature/DST-"$1"
+}
+dev() {
+  gco master;
+  gl;
+  gbd dev/shiva;
+  gco -b dev/shiva;
+  ups dev/shiva;
+}
+
+cmt() {
+  gc -m "[DST-"$1"]: "$2""
+  git push --set-upstream origin feature/DST-"$1"
+  gst
+}
+bug() {
+  gc -m "[DST-"$1"]: "$2""
+  git push --set-upstream origin bugfix/DST-"$1"
+  gst
+}
+
+alias useuat="kubectl config use-context gke_fpon-224503_asia-southeast1_fpon-uat"
+alias useprod="kubectl config use-context gke_fponprd_asia-southeast1_fpon-cluster"
+alias dbuat="useuat; kubectl port-forward svc/sql-proxy 3301:3306"
+alias dbprod="useprod; kubectl port-forward svc/sql-proxy 3306:3306"
+
+trading() {
+  open https://mail.google.com/mail/u/0/\#search/from%3ATradingAssistant%40interactivebrokers.com
+}
+stats() {
+  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863&range=T7
+}
+get() {
+  curl http://localhost:8085/orders\?symbol\="$1" | json_pp
+}
+securities() {
+  curl http://localhost:8085/securities | json_pp
+}
+active() {
+  curl http://localhost:8085/yahoo/active | json_pp
+}
+pos() {
+  if [ "$#" -gt 0 ]; then
+    curl http://localhost:8085/positions\?loss\=true | json_pp
+    return
+  fi
+
+  curl http://localhost:8085/positions | json_pp
+}
+list() {
+  curl http://localhost:8085/list | json_pp
+}
+summary() {
+  curl http://localhost:8085/summary | json_pp
+}
+init() {
+  curl \
+--url  https://localhost:8080/v1/api/iserver/auth/ssodh/init\?publish\=true\&compete\=true \
+--request POST \
+--header 'Content-Type:application/json' \
+--data '{}' --insecure
+}
+logout() {
+  curl https://localhost:8080/v1/api/logout --insecure
+}
+delete() {
+  # if [[ ! -z $2 ]]; then
+  #   curl --request DELETE --url http://localhost:8085/orders/"$1"?orderID="$1" | json_pp
+  #   return
+  # fi
+
+  for symbol in "$@"
+  do
+    curl --request DELETE --url http://localhost:8085/orders/"$symbol" | json_pp
+  done
+}
+others() {
+  curl http://localhost:8085/similar/"$1" | json_pp
+}
+reply() {
+ curl --url http://localhost:8085/reply/"$1" --request POST | json_pp
+}
+
+req() {
+  #!/bin/bash
+
+# Check if the correct number of arguments is provided
+if [ "$#" -lt 3 ]; then
+  echo "Usage: $0 <Ticker> <Quantity> <Prices>"
+  exit 1
+fi
+
+# Assign input values to variables
+ticker=$1
+quantity=$2
+prices=$3
+
+# Format the JSON output
+output=$(cat <<EOF
+{
+  "orders": [
+    {
+      "prices": "$prices",
+      "orderType": "STP LMT",
+      "side": "BUY",
+      "ticker": "$ticker",
+      "tif": "GTC",
+      "quantity": $(printf "%.0f" "$quantity")
+    }
+  ]
+}
+EOF
+)
+
+# Print the JSON output
+echo "$output"
+return "$output"
+
+}
+
+
+up() {
+#!/bin/bash
+
+# Assign input values to variables
+orderID=$1
+price=$2
+size=$3
+
+if [ -z $size ]; then
+  size=0
+fi
+
+  # Format the JSON output
+output=$(cat <<EOF
+{
+    "orderID": $orderID,
+    "quantity": $size,
+    "price": $price
+}
+EOF
+)
+
+# Print the JSON output
+echo "$output"
+
+curl -X PUT -H 'Content-Type: application/json' -d "$output" "http://localhost:8085/contracts" | json_pp
+
+}
+buy() {
+  json_data=$(req "$1" "$2" "$3")
+
+  curl -X POST -H 'Content-Type: application/json' -d "$json_data" "http://localhost:8085/bracketOrders" | json_pp
+}
+
+oca() {
+  json_data=$(req "$1" "$2" "$3")
+
+  curl -X POST -H 'Content-Type: application/json' -d "$json_data" "http://localhost:8085/ocaOrders" | json_pp
+}
+
+ms() {
+  url="http://localhost:8085/sell"
+  for symbol in "$@"
+  do
+      url="${url}?symbol=${symbol}"
+      echo $url
+      curl -X POST -H 'Content-Type: application/json' -d "{}" "$url" | json_pp
+      delete $symbol
+  done
+}
+
+export PATH=$PATH:$(go env GOPATH)/bin
+export ANDROID_SDK_ROOT=$HOME/Android/sdk
+# avdmanager, sdkmanager
+export PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
+# adb, logcat
+export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+# emulator
+export PATH=$PATH:$ANDROID_SDK_ROOT/emulator
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/1041803/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/1041803/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/1041803/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/1041803/google-cloud-sdk/completion.zsh.inc'; fi
+
+[[ -s "/Users/1041803/.gvm/scripts/gvm" ]] && source "/Users/1041803/.gvm/scripts/gvm"
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
+ibkrURL=https://localhost:8080/v1/api/iserver
+alias json=node -p "JSON.stringify( JSON.parse(require('fs').readFileSync(0) ), 0, 1 )"
+
+get() {
+  curl http://localhost:8085/orders\?symbol\="$1" | json_pp
+}
+
+report() {
+  # go run . 1 us | egrep "MAs-X|MA50 < MA150/200|break|High|low|Percent|x 3.|NIFTY|Tight" | sort -k2 -r
+  open https://thechartreport.com/todays-daily-chart-report/
+}
+
+watch() {
+  watchlist=$(grep WATCHLIST .watchlist)
+  for symbol in "$@"
+  do
+    watchlist+=" $symbol"
+  done
+
+  echo $watchlist > .watchlist
+}
+
+unwatch() {
+  #!/bin/bash
+
+  watchlist_array=$(grep WATCHLIST .watchlist)
+
+  delete_list_array=($@)
+
+  for del_item in "${delete_list_array[@]}"; do
+    watchlist_array=($(echo "${watchlist_array[@]}" | tr ' ' '\n' | grep -v "$del_item" | tr '\n' ' '))
+  done
+
+  WATCHLIST=$(echo "${watchlist_array[@]}")
+  # echo "Modified WATCHLIST: $WATCHLIST"
+
+  echo $WATCHLIST > .watchlist
+
+}
+
+hold() {
+  for symbol in "$@"
+  do
+    open https://finance.yahoo.com/quote/$symbol/holders#:~:text=Mutual
+  done
+}
+
+prof() {
+  for symbol in "$@"
+  do
+    open https://finance.yahoo.com/quote/$symbol/profile
+  done
+}
+
+etf() {
+  for symbol in "$@"
+  do
+    open https://finance.yahoo.com/quote/$symbol/holdings#:~:text=Top%2010%20Holdings
+  done
+}
+
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+
+pc() {
+  perc=1
+  num=$1
+
+  if [ ! -z $2 ]; then
+    perc=$2
+  fi
+  perc=$(bc -l <<< "scale=2; $perc/100")
+  perc=$(($perc + 1))
+  result=$(($num * $perc))
+  result=$(printf "%.02f" "$result")
+  echo $result
+  echo $result | pbcopy
+}
+
+action() {
+  if [ ! -z $1 ]; then
+    curl http://localhost:8085/sheets/actionItems | json_pp | grep "\"$1\"" -A16
+    return
+  fi
+
+  curl http://localhost:8085/sheets/actionItems | json_pp
+}
+
+200() {
+  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863
+}
+
+size() {
+  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=798346765&range=A2
+}
+
+sectors() {
+  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863&range=AC1
+}
+
+opt() {
+  open https://finance.yahoo.com/quote/$1/options
+}

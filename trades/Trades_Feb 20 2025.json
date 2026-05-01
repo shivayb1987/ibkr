@@ -1,0 +1,106 @@
+{
+  "code": 200,
+  "status": "SUCCESS",
+  "data": {
+    "list": {
+      "2025/02/13": [
+        "rec SN -24 106.805 2025/02/13"
+      ],
+      "2025/02/19": [
+        "rec AER 49 103.83 2025/02/19"
+      ],
+      "2025/02/20": [
+        "rec BABA -27 141.04 2025/02/20"
+      ]
+    },
+    "trades": [
+      {
+        "execution_id": "0000d5d3.67ae229b.01.01",
+        "symbol": "SN",
+        "supports_tax_opt": "1",
+        "side": "S",
+        "order_description": "Sold 24 @ 106.805 on IBKRATS",
+        "trade_time": "20250213-16:17:13",
+        "trade_time_r": 1739463433000,
+        "size": 24,
+        "price": "106.805",
+        "order_ref": "",
+        "submitter": "",
+        "exchange": "IBKRATS",
+        "commission": "1.17",
+        "net_amount": 2563.32,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "SHARKNINJA INC",
+        "contract_description_1": "SN",
+        "sec_type": "STK",
+        "listing_exchange": "NYSE",
+        "conid": 644855271,
+        "conidEx": "644855271@IBKRATS",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      },
+      {
+        "execution_id": "00012df0.67b71d85.01.01",
+        "symbol": "BABA",
+        "supports_tax_opt": "1",
+        "side": "S",
+        "order_description": "Sold 27 @ 141.04 on NYSE",
+        "trade_time": "20250220-14:38:00",
+        "trade_time_r": 1740062280000,
+        "size": 27,
+        "price": "141.04",
+        "order_ref": "",
+        "submitter": "",
+        "exchange": "NYSE",
+        "commission": "1.21",
+        "net_amount": 3808.08,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "ALIBABA GROUP HOLDING-SP ADR",
+        "contract_description_1": "BABA",
+        "sec_type": "STK",
+        "listing_exchange": "NYSE",
+        "conid": 166090175,
+        "conidEx": "166090175",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      },
+      {
+        "execution_id": "00012df0.67b5cddf.01.01",
+        "symbol": "AER",
+        "supports_tax_opt": "1",
+        "side": "B",
+        "order_description": "Bot 49 @ 103.83 on NYSE",
+        "trade_time": "20250219-14:54:25",
+        "trade_time_r": 1739976865000,
+        "size": 49,
+        "price": "103.83",
+        "order_ref": "Parent_AER_2025-02-19 22:54:24",
+        "submitter": "",
+        "exchange": "NYSE",
+        "commission": "1.09",
+        "net_amount": 5087.67,
+        "account": "U5799398",
+        "accountCode": "U5799398",
+        "account_allocation_name": "U5799398",
+        "company_name": "AERCAP HOLDINGS NV",
+        "contract_description_1": "AER",
+        "sec_type": "STK",
+        "listing_exchange": "NYSE",
+        "conid": 41692402,
+        "conidEx": "41692402",
+        "clearing_id": "IB",
+        "clearing_name": "IB",
+        "liquidation_trade": "0",
+        "is_event_trading": "0"
+      }
+    ]
+  }
+}
