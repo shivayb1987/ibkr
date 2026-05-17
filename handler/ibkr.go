@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/spf13/viper"
 	"ibkr/model"
 	"math"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/spf13/viper"
 )
 
 type IBKRService interface {
@@ -348,6 +349,7 @@ func (h Ibkr) List(w http.ResponseWriter, r *http.Request) {
 		"list":                 strings.Join(symbols, ","),
 		"orders":               orders,
 		"workingOrders":        workingOrders,
+		"workingOrdersCount":   len(workingOrders),
 		"newOrders":            pendingOrders,
 		"totalOrderAmount":     totalOrderAmount,
 		"totalPotentialLoss":   potentialLoss,
@@ -714,10 +716,14 @@ func (h Ibkr) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tickersMap := make(map[string]bool)
-	orderIDs := make(map[string]int, len(openOrders.Orders))
+	orderIDs := make(map[string][]int, len(openOrders.Orders))
 	for _, order := range openOrders.Orders {
 		tickersMap[order.Ticker] = true
-		orderIDs[order.OrigOrderType] = order.OrderId
+		if _, ok := orderIDs[order.OrigOrderType]; ok {
+			orderIDs[order.OrigOrderType] = append(orderIDs[order.OrigOrderType], order.OrderId)
+		} else {
+			orderIDs[order.OrigOrderType] = []int{order.OrderId}
+		}
 	}
 	workingOrders := make([]string, 0)
 	for _, openOrder := range openOrders.Orders {
@@ -1058,16 +1064,24 @@ func (h Ibkr) ContractID(w http.ResponseWriter, r *http.Request) {
 	for _, q := range quote {
 		if q.Description != "VENTURE" {
 			conIDStr = q.ConID
-			exchange = q.Description
 		}
 	}
 	for _, q := range quote {
-		if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" {
+		if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" || q.Description == "BATS" {
 			conIDStr = q.ConID
-			exchange = q.Description
+			if exchange == "" {
+				exchange = q.Description
+			}
 			break
 		}
 	}
+	for _, q := range quote {
+		if q.Description == strings.ToUpper(exchange) {
+			conIDStr = q.ConID
+			break
+		}
+	}
+
 	conID, err := strconv.ParseInt(conIDStr, 10, 32)
 	if err != nil {
 		Errors(w, r, http.StatusInternalServerError, err.Error())
@@ -1240,6 +1254,10 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	exchange := r.URL.Query().Get("exchange")
 	stopLossParam := r.URL.Query().Get("stopLoss")
+	entryParam := r.URL.Query().Get("entry")
+	side := r.URL.Query().Get("side")
+	entry, _ := strconv.ParseFloat(entryParam, 64)
+	entry = roundFloat(entry)
 	conID, _ := strconv.ParseInt(r.URL.Query().Get("coID"), 10, 32)
 
 	totalEquity := h.totalEquity
@@ -1254,14 +1272,14 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 		//sgdusd := h.getFX("SGDUSD")
 		totalEquity = summary.EquityWithLoanValue.Amount
 	}
-	_, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
-	if err != nil {
-		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get working orders", err.Error()))
+	//_, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
+	//if err != nil {
+	//	Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get working orders", err.Error()))
+	//
+	//	return
+	//}
 
-		return
-	}
-
-	coreEquity := totalEquity - potentialLoss
+	coreEquity := totalEquity - 0
 
 	size, err := strconv.ParseFloat(r.URL.Query().Get("position"), 64)
 	if err != nil {
@@ -1304,7 +1322,13 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			for _, q := range quote {
-				if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "AMEX" || q.Description == "TSE" || q.Description == "NASDAQ" {
+				if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" || q.Description == "BATS" {
+					conIDStr = q.ConID
+					break
+				}
+			}
+			for _, q := range quote {
+				if q.Description == strings.ToUpper(exchange) {
 					conIDStr = q.ConID
 					break
 				}
@@ -1344,21 +1368,38 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 		}
 
 		closes := quotes[0].Close
-		buy := roundFloat(closes[len(closes)-1] * 1.003)
+		closingPrice := closes[len(closes)-1]
+		if closingPrice <= 0 {
+			closingPrice = result.Meta.RegularMarketPrice
+		}
+
+		buy := roundFloat(closingPrice * 1.003)
+		if entry > 0 {
+			buy = roundFloat(entry)
+		}
 		atr := h.yahooService.ATR(quotes[0], 22)
 		sl := 3 * atr
 		stopLoss = roundFloat(buy - sl)
 		if stopLossParam != "" {
 			sl, _ = strconv.ParseFloat(stopLossParam, 64)
-			stopLoss = roundFloat(buy * (1 - (sl / 100)))
+			if strings.ToLower(side) == "sell" {
+				stopLoss = roundFloat(buy * (1 + (sl / 100)))
+			} else {
+				stopLoss = roundFloat(buy * (1 - (sl / 100)))
+			}
 		}
 
-		quantity = math.Round(positionSize / (buy - stopLoss))
+		if strings.ToLower(side) == "sell" {
+			quantity = math.Round(positionSize / (stopLoss - buy))
+		} else {
+			quantity = math.Round(positionSize / (buy - stopLoss))
+		}
 		total = quantity * buy
 
 	}
 
 	Success(w, r, map[string]interface{}{
+		"quantity": quantity,
 		"position": fmt.Sprintf("Amount: %0.2f, loss %0.2f, 1%% loss %0.2f stopLevel: %0.2f (%0.2f%%) ", total, positionSize, total*0.01, stopLoss, 100*positionSize/total),
 		"record":   fmt.Sprintf("recAll %s %0.0f %0.2f %s", symbols[0], math.Round(quantity), total/quantity, time.Now().Format("2006/01/02")),
 	})
@@ -1541,21 +1582,24 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			Errors(w, r, http.StatusInternalServerError, err.Error())
 			return
 		}
-		conIDStr := quote[0].ConID
-		for _, q := range quote {
-			if q.Description != "VENTURE" {
-				conIDStr = q.ConID
+		conIDStr := fmt.Sprintf("%d", order.ConID)
+
+		if order.ConID == 0 || conIDStr == "" {
+			for _, q := range quote {
+				if q.Description != "VENTURE" {
+					conIDStr = q.ConID
+				}
 			}
-		}
-		for _, q := range quote {
-			if strings.Contains(q.Description, "NASDAQ") || strings.Contains(q.Description, "NYSE") || strings.Contains(q.Description, "ARCA") || strings.Contains(q.Description, "TSE") {
-				conIDStr = q.ConID
-				break
+			for _, q := range quote {
+				if q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" || q.Description == "BATS" {
+					conIDStr = q.ConID
+					break
+				}
 			}
-		}
-		for _, q := range quote {
-			if q.Description == exchange {
-				conIDStr = q.ConID
+			for _, q := range quote {
+				if q.Description == strings.ToUpper(exchange) {
+					conIDStr = q.ConID
+				}
 			}
 		}
 		conID, err := strconv.ParseInt(conIDStr, 10, 32)
@@ -2267,7 +2311,7 @@ func (h Ibkr) Alert(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	conditions := strings.Split(request.Condition, " ")
+	conditions := strings.Split(*request.Condition, " ")
 	request.Conditions = []model.Conditions{{
 		Conidex:       fmt.Sprintf("%s@%s", tickerData.ConID, tickerData.Description),
 		LogicBind:     "n",
@@ -2276,6 +2320,8 @@ func (h Ibkr) Alert(w http.ResponseWriter, r *http.Request) {
 		Type:          1,
 		Value:         conditions[1],
 	}}
+
+	request.Condition = nil
 
 	res, err := h.alertService.Create(r.Context(), request)
 	if err != nil {

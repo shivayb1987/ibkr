@@ -9,6 +9,7 @@ import (
 	"ibkr/service"
 	"net/http"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -447,6 +448,13 @@ func (h SheetsHandler) Performance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Analyse backtests all sheet trades from 2026 onward using ATR-based stop and target levels.
+// For each entry it replays daily Yahoo OHLC from the open date and checks whether price
+// first hits a stop (percent param, or atr×ATR/price when percent is omitted) or a profit
+// target (multiple × percent, default multiple 2). Stop exits use the open when price gaps
+// through the stop level, so loss can exceed the configured risk. Returns per-ticker outcome
+// labels, aggregate PnL, and stop/target counts.
+// Query params: percent, multiple (default 2), atr (default 2), side (long|short), ticker (repeatable).
 func (h SheetsHandler) Analyse(w http.ResponseWriter, r *http.Request) {
 	percentStr := r.URL.Query().Get("percent")
 	side := r.URL.Query().Get("side")
@@ -509,7 +517,7 @@ func (h SheetsHandler) Analyse(w http.ResponseWriter, r *http.Request) {
 
 		loc, _ := time.LoadLocation("Asia/Singapore")
 
-		if entryTime.Before(time.Date(2025, 1, 1, 0, 0, 0, 0, loc)) {
+		if entryTime.Before(time.Date(2026, 1, 1, 0, 0, 0, 0, loc)) {
 			continue
 		}
 		if _, ok := tickersFilter[ticker]; !ok && len(tickers) > 0 {
@@ -547,6 +555,7 @@ func (h SheetsHandler) Analyse(w http.ResponseWriter, r *http.Request) {
 			closes := quote.Close
 			highs := quote.High
 			lows := quote.Low
+			opens := quote.Open
 
 			tickerPnL := 0.0
 			for i, timestamp := range result.Timestamps {
@@ -570,8 +579,14 @@ func (h SheetsHandler) Analyse(w http.ResponseWriter, r *http.Request) {
 					}
 					runningPercent := (dayHighLow / thenPrice) - 1
 					if (shares > 0 && runningPercent <= -percent) || (shares < 0 && runningPercent >= percent) {
-						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*-percent, shares*(percent*currentPrice))
-						tickerPnL = shares * (currentPrice - thenPrice) * fx
+						hasOpen := len(opens) > i
+						dayOpen := 0.0
+						if hasOpen {
+							dayOpen = opens[i]
+						}
+						exitPrice, lossPercent := stopExitPrice(thenPrice, percent, shares, dayOpen, hasOpen)
+						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*lossPercent, shares*(exitPrice-thenPrice))
+						tickerPnL = shares * (exitPrice - thenPrice) * fx
 						countTracker["stopLoss"] = countTracker["stopLoss"] + 1
 						break
 					}
@@ -611,22 +626,18 @@ func (h SheetsHandler) Analyse(w http.ResponseWriter, r *http.Request) {
 		"count":    countTracker,
 	})
 }
+
+// AnalyseEntry backtests trades whose sheet Status is "Target" (the limit order was hit).
+// For each 2026+ entry it replays daily Yahoo OHLC from the open date and asks: after the
+// recorded target price (Sold column) is touched, did price next hit a breakeven stop or an
+// extended profit level (multiple × target distance from entry)? Stop exits use the open on
+// gap-through-stop days. Returns per-ticker outcome labels, aggregate PnL, and stop/target counts.
+// Query params: multiple (default 2), side (long|short), ticker (repeatable).
 func (h SheetsHandler) AnalyseEntry(w http.ResponseWriter, r *http.Request) {
-	percentStr := r.URL.Query().Get("percent")
 	side := r.URL.Query().Get("side")
-	if percentStr == "" {
-		//Success(w, r, map[string]interface{}{})
-		//return
-	}
-	percent := extractNum(r.URL.Query().Get("percent"))
 	multiple := extractNum(r.URL.Query().Get("multiple"))
 	if multiple == 0 {
 		multiple = 2
-	}
-
-	atrMultiple := extractNum(r.URL.Query().Get("atr"))
-	if atrMultiple == 0 {
-		atrMultiple = 2
 	}
 	result, err := h.sheetsService.GetValues(r.Context(), h.spreadsheetID, sheetMap["trades"])
 	if err != nil {
@@ -670,7 +681,7 @@ func (h SheetsHandler) AnalyseEntry(w http.ResponseWriter, r *http.Request) {
 
 		loc, _ := time.LoadLocation("Asia/Singapore")
 
-		if entryTime.Before(time.Date(2025, 1, 1, 0, 0, 0, 0, loc)) {
+		if entryTime.Before(time.Date(2026, 1, 1, 0, 0, 0, 0, loc)) {
 			continue
 		}
 		status := row[getIndex(headers, "Status")]
@@ -720,6 +731,7 @@ func (h SheetsHandler) AnalyseEntry(w http.ResponseWriter, r *http.Request) {
 			closes := quote.Close
 			highs := quote.High
 			lows := quote.Low
+			opens := quote.Open
 
 			tickerPnL := 0.0
 			for i, timestamp := range result.Timestamps {
@@ -744,13 +756,16 @@ func (h SheetsHandler) AnalyseEntry(w http.ResponseWriter, r *http.Request) {
 							targetPriceReached = true
 						}
 					}
-					if percentStr == "" {
-						percent = currentPrice/thenPrice - 1
-					}
 					runningPercent := (dayHighLow / thenPrice) - 1
 					if targetPriceReached && ((shares > 0 && runningPercent <= 0) || (shares < 0 && runningPercent >= 0)) {
-						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*-percent, shares*(percent*currentPrice))
-						tickerPnL = shares * (dayHighLow - thenPrice) * fx
+						hasOpen := len(opens) > i
+						dayOpen := 0.0
+						if hasOpen {
+							dayOpen = opens[i]
+						}
+						exitPrice, lossPercent := stopExitPrice(thenPrice, 0, shares, dayOpen, hasOpen)
+						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*lossPercent, shares*(exitPrice-thenPrice))
+						tickerPnL = shares * (exitPrice - thenPrice) * fx
 						countTracker["stopLoss"] = countTracker["stopLoss"] + 1
 						break
 					}
@@ -790,6 +805,13 @@ func (h SheetsHandler) AnalyseEntry(w http.ResponseWriter, r *http.Request) {
 		"count":    countTracker,
 	})
 }
+
+// Analyse2 backtests sheet trades with a trailing stop that ratchets to breakeven once
+// price reaches the initial profit threshold (percent). After that move, stop is set to
+// entry and target is raised to (multiple+1)× percent. Uses ATR-derived percent when
+// percent is omitted. Stop exits use the open on gap-through-stop days. Replays 1y of
+// daily Yahoo OHLC from each entry date.
+// Query params: percent, multiple (default 2), atr (default 2), side (long|short), ticker (repeatable).
 func (h SheetsHandler) Analyse2(w http.ResponseWriter, r *http.Request) {
 	percentStr := r.URL.Query().Get("percent")
 	side := r.URL.Query().Get("side")
@@ -933,8 +955,14 @@ func (h SheetsHandler) Analyse2(w http.ResponseWriter, r *http.Request) {
 						newPercentSet = true
 					}
 					if (shares > 0 && runningPercent <= -newPercent) || (shares < 0 && runningPercent >= newPercent) {
-						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*-newPercent, shares*(newPercent*currentPrice))
-						tickerPnL = shares * (currentPrice - thenPrice) * fx
+						hasOpen := len(opens) > i
+						dayOpen := 0.0
+						if hasOpen {
+							dayOpen = open
+						}
+						exitPrice, lossPercent := stopExitPrice(thenPrice, newPercent, shares, dayOpen, hasOpen)
+						performanceByTicker[displayTicker] = fmt.Sprintf("Red %0.2f :%0.2f NC", 100*lossPercent, shares*(exitPrice-thenPrice))
+						tickerPnL = shares * (exitPrice - thenPrice) * fx
 						countTracker["stopLoss"] = countTracker["stopLoss"] + 1
 						break
 					}
@@ -1065,6 +1093,302 @@ func (h SheetsHandler) Trades(w http.ResponseWriter, r *http.Request) {
 		"avgTrade": fmt.Sprintf("%0.2f", total/count),
 	})
 }
+func (h SheetsHandler) Units(w http.ResponseWriter, r *http.Request) {
+	readRange := sheetMap["trades"]
+	status := r.URL.Query().Get("status")
+	result, err := h.sheetsService.GetValues(r.Context(), h.spreadsheetID, readRange)
+	if err != nil {
+		Errors(w, r, 500, err.Error())
+		return
+	}
+
+	headers := result.Values[0]
+	total := 0.0
+	count := 0.0
+	amount := 0.0
+	for _, row := range result.Values[1:] {
+		if len(row) <= 15 || row[getIndex(headers, "Ticker")] == "" {
+			break
+		}
+
+		open := row[getIndex(headers, "Open")]
+		entryTime, _ := time.Parse(service.DateTimeFormat2, open)
+
+		loc, _ := time.LoadLocation("Asia/Singapore")
+		if entryTime.Before(time.Date(2026, 1, 1, 0, 0, 0, 0, loc)) {
+			continue
+		}
+
+		if status != "" && strings.TrimSpace(row[getIndex(headers, "Status")]) == status {
+			//fmt.Printf("%s\n", row[getIndex(headers, "Ticker")])
+			total, amount, count = getTradeStats("", row, headers, total, amount, count, status, "", "")
+		}
+	}
+
+	Success(w, r, map[string]interface{}{
+		"total":    roundFloat(total),
+		"count":    count,
+		"amount":   roundFloat(amount),
+		"p/l":      fmt.Sprintf("%0.2f %%, avg trade %0.3f %%", 100*total/amount, 100*total/amount/count),
+		"avgTrade": roundFloat(total / count),
+	})
+}
+func (h SheetsHandler) Positions(w http.ResponseWriter, r *http.Request) {
+	readRange := sheetMap["trades"]
+	currentDate := r.URL.Query().Get("currentDate")
+	if currentDate == "" {
+		currentDate = time.Now().Format(service.DateTimeFormat2)
+	}
+
+	result, err := h.sheetsService.GetValues(r.Context(), h.spreadsheetID, readRange)
+	if err != nil {
+		Errors(w, r, 500, err.Error())
+		return
+	}
+
+	headers := result.Values[0]
+	count := 0.0
+	countSL := 0.0
+	countTarget := 0.0
+	currentDateTime, _ := time.Parse(service.DateTimeFormat2, currentDate)
+
+	type Ticker struct {
+		Ticker string
+		Status string
+		Open   string
+		Close  string
+	}
+
+	tickers := make([]Ticker, 0, 50)
+	sheetLayout := "2006/1/2"
+	for _, row := range result.Values[1:] {
+		if len(row) <= 15 || row[getIndex(headers, "Ticker")] == "" {
+			break
+		}
+
+		ticker := row[getIndex(headers, "Ticker")]
+
+		status := row[getIndex(headers, "Status")]
+		open := row[getIndex(headers, "Open")]
+		entryTime, _ := time.Parse(service.DateTimeFormat2, open)
+		if entryTime.IsZero() {
+			entryTime, _ = time.Parse(sheetLayout, open)
+		}
+
+		close := row[getIndex(headers, "Close")]
+		closeTime, _ := time.Parse(service.DateTimeFormat2, close)
+		if closeTime.IsZero() {
+			closeTime, _ = time.Parse(sheetLayout, close)
+		}
+
+		if entryTime.IsZero() {
+			continue
+		}
+
+		if (entryTime.Before(currentDateTime) || entryTime.Equal(currentDateTime)) &&
+			(closeTime.IsZero() || closeTime.After(currentDateTime) || closeTime.Equal(currentDateTime)) {
+			tcker := Ticker{
+				Ticker: ticker,
+				Status: status,
+				Open:   open,
+				Close:  close,
+			}
+
+			tickers = append(tickers, tcker)
+			if status != "" && (strings.TrimSpace(row[getIndex(headers, "Status")]) == "SL" ||
+				strings.TrimSpace(row[getIndex(headers, "Status")]) == "TL") {
+				countSL++
+			}
+
+			if status != "" && strings.TrimSpace(row[getIndex(headers, "Status")]) == "Target" {
+				countTarget++
+			}
+
+			count++
+		}
+	}
+
+	Success(w, r, map[string]interface{}{
+		"countSL":     countSL,
+		"countTarget": countTarget,
+		"tickers":     tickers,
+		"zzCount":     count - countSL - countTarget,
+	})
+}
+
+func (h SheetsHandler) PositionsAfterTarget(w http.ResponseWriter, r *http.Request) {
+	readRange := sheetMap["trades"]
+	currentDate := r.URL.Query().Get("currentDate")
+	if currentDate == "" {
+		currentDate = time.Now().Format(service.DateTimeFormat2)
+	}
+
+	result, err := h.sheetsService.GetValues(r.Context(), h.spreadsheetID, readRange)
+	if err != nil {
+		Errors(w, r, 500, err.Error())
+		return
+	}
+
+	headers := result.Values[0]
+	currentDateTime, _ := time.Parse(service.DateTimeFormat2, currentDate)
+
+	type Ticker struct {
+		Ticker            string
+		Status            string
+		Open              string
+		Close             string
+		Count             *int     `json:",omitempty"`
+		OpenedAfterTarget []Ticker `json:",omitempty"`
+	}
+
+	tickers := make([]Ticker, 0, 50)
+	tickersTarget := make([]Ticker, 0, 50)
+	sheetLayout := "2006/1/2"
+	for _, row := range result.Values[1:] {
+		if len(row) <= 15 || row[getIndex(headers, "Ticker")] == "" {
+			break
+		}
+
+		ticker := row[getIndex(headers, "Ticker")]
+
+		status := row[getIndex(headers, "Status")]
+		open := row[getIndex(headers, "Open")]
+		entryTime, _ := time.Parse(service.DateTimeFormat2, open)
+		if entryTime.IsZero() {
+			entryTime, _ = time.Parse(sheetLayout, open)
+		}
+
+		close := row[getIndex(headers, "Close")]
+		closeTime, _ := time.Parse(service.DateTimeFormat2, close)
+		if closeTime.IsZero() {
+			closeTime, _ = time.Parse(sheetLayout, close)
+		}
+
+		if closeTime.Before(currentDateTime) {
+			continue
+		}
+
+		if status == "" || (strings.TrimSpace(row[getIndex(headers, "Status")]) != "Target") {
+			continue
+		}
+
+		tcker := Ticker{
+			Ticker: ticker,
+			Status: status,
+			Open:   open,
+			Close:  close,
+		}
+
+		tickersTarget = append(tickersTarget, tcker)
+	}
+
+	sort.Slice(tickersTarget, func(i, j int) bool {
+		closeTime1, _ := time.Parse(service.DateTimeFormat2, tickersTarget[i].Close)
+		closeTime2, _ := time.Parse(service.DateTimeFormat2, tickersTarget[j].Close)
+		return closeTime1.Before(closeTime2)
+	})
+
+	if len(tickersTarget) == 0 {
+		Success(w, r, map[string]interface{}{
+			"tickersTarget": tickersTarget,
+		})
+		return
+	}
+
+	closeAfterTarget := tickersTarget[0].Close
+	closeAfterTargetNext := tickersTarget[0].Close
+
+	totalCount := 0
+	for i, tickerTarget := range tickersTarget {
+		ticker := tickerTarget.Ticker
+
+		status := tickerTarget.Status
+		open := tickerTarget.Open
+		closeAfterTarget = tickerTarget.Close
+		closeAfterTargetNext = tickerTarget.Close
+		entryTime, _ := time.Parse(service.DateTimeFormat2, open)
+		if entryTime.IsZero() {
+			entryTime, _ = time.Parse(sheetLayout, open)
+		}
+
+		if len(tickersTarget) > i+1 {
+			closeAfterTargetNext = tickersTarget[i+1].Close
+		} else {
+			closeAfterTargetNext = "2220/01/01"
+		}
+
+		closeTime, _ := time.Parse(service.DateTimeFormat2, closeAfterTarget)
+		closeTimeNext, _ := time.Parse(service.DateTimeFormat2, closeAfterTargetNext)
+		if closeTime.IsZero() {
+			closeTime, _ = time.Parse(sheetLayout, closeAfterTarget)
+		}
+
+		if closeTime.Before(currentDateTime) {
+			continue
+		}
+
+		if status == "" || (strings.TrimSpace(tickerTarget.Status) != "Target") {
+			continue
+		}
+
+		tcker := Ticker{
+			Ticker: ticker,
+			Status: status,
+			Open:   open,
+			Close:  closeAfterTarget,
+		}
+
+		count := 0
+		for _, row := range result.Values[1:] {
+			if len(row) <= 15 || row[getIndex(headers, "Ticker")] == "" {
+				break
+			}
+
+			tickerL := row[getIndex(headers, "Ticker")]
+
+			statusL := row[getIndex(headers, "Status")]
+			openL := row[getIndex(headers, "Open")]
+			entryTimeL, _ := time.Parse(service.DateTimeFormat2, openL)
+			if entryTimeL.IsZero() {
+				entryTimeL, _ = time.Parse(sheetLayout, openL)
+			}
+
+			closeL := row[getIndex(headers, "Close")]
+			closeTimeL, _ := time.Parse(service.DateTimeFormat2, closeL)
+			if closeTimeL.IsZero() {
+				closeTimeL, _ = time.Parse(sheetLayout, closeL)
+			}
+
+			if (entryTimeL.After(closeTime) || entryTimeL.Equal(closeTime)) && (entryTimeL.Before(closeTimeNext)) {
+				//if closeTimeL.IsZero() {
+				tcker2 := Ticker{
+					Ticker: tickerL,
+					Status: statusL,
+					Open:   openL,
+					Close:  closeL,
+				}
+
+				tcker.OpenedAfterTarget = append(tcker.OpenedAfterTarget, tcker2)
+				count++
+				totalCount++
+				tcker.Count = &count
+				//}
+			}
+		}
+		sort.Slice(tcker.OpenedAfterTarget, func(i, j int) bool {
+			closeTime1, _ := time.Parse(service.DateTimeFormat2, tcker.OpenedAfterTarget[i].Open)
+			closeTime2, _ := time.Parse(service.DateTimeFormat2, tcker.OpenedAfterTarget[j].Open)
+			return closeTime1.Before(closeTime2)
+		})
+		tickers = append(tickers, tcker)
+	}
+
+	Success(w, r, map[string]interface{}{
+		"tickers":        tickers,
+		"zzAllowedCount": len(tickers) * 2,
+		"zzCount":        totalCount,
+	})
+}
 
 func getTradeStats(sector string, row []string, headers []string, total float64, amount float64, count float64, status string, working string, side string) (float64, float64, float64) {
 	if side == "long" && parseFloat(row[getIndex(headers, "Shares")]) > 0 {
@@ -1166,6 +1490,28 @@ func extractNum(str string) float64 {
 	str = strings.Replace(str, ",", "", -1)
 	str = strings.Replace(str, "$", "", -1)
 	return parseFloat(str)
+}
+
+// stopExitPrice returns the fill price and loss percent when a stop triggers.
+// If dayOpen gaps through the stop level, exit is at open so loss can exceed stopPercent.
+func stopExitPrice(thenPrice, stopPercent, shares, dayOpen float64, hasOpen bool) (exitPrice, lossPercent float64) {
+	exitPrice = thenPrice * (1 - stopPercent)
+	if shares < 0 {
+		exitPrice = thenPrice * (1 + stopPercent)
+	}
+	if hasOpen {
+		if shares > 0 && dayOpen < exitPrice {
+			exitPrice = dayOpen
+		} else if shares < 0 && dayOpen > exitPrice {
+			exitPrice = dayOpen
+		}
+	}
+	actualPercent := (exitPrice / thenPrice) - 1
+	lossPercent = -actualPercent
+	if shares < 0 {
+		lossPercent = actualPercent
+	}
+	return exitPrice, lossPercent
 }
 
 func getIndex(headers []string, column string) int {

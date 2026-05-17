@@ -2,7 +2,7 @@ package model
 
 type Alert struct {
 	Ticker          string       `json:"ticker"`
-	Condition       string       `json:"condition"`
+	Condition       *string      `json:"condition,omitempty"`
 	AlertMessage    string       `json:"alertMessage"`
 	AlertName       string       `json:"alertName"`
 	ExpireTime      string       `json:"expireTime"`

@@ -1,5 +1,0 @@
-{
-  "code": 500,
-  "status": "ERROR",
-  "message": "Get \"https://localhost:8080/v1/api/iserver/account/trades\": dial tcp [::1]:8080: connect: connection refused"
-}
