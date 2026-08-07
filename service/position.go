@@ -6,13 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
 	"ibkr/model"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"sort"
 	"strconv"
+
+	"github.com/spf13/viper"
 )
 
 type Position struct {
@@ -102,6 +104,10 @@ func (s Position) Summary(ctx context.Context) (model.Summary, error) {
 	if parseErr != nil {
 		fmt.Errorf("cannot unmarshall: %w", parseErr)
 		return model.Summary{}, err
+	}
+
+	if summaryJSON, err := json.Marshal(data); err == nil {
+		log.Printf("summary: %s", string(summaryJSON))
 	}
 
 	return data, nil

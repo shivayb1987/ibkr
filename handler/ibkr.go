@@ -1125,6 +1125,11 @@ func (h Ibkr) MarketBuy(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		size = 1.0
 	}
+	if size > 1 {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position too large: %f (max 1 = 1%% of equity at risk)", size))
+
+		return
+	}
 
 	target, _ := strconv.ParseFloat(targetStr, 64)
 
@@ -1217,6 +1222,11 @@ func (h Ibkr) MarketBuy(w http.ResponseWriter, r *http.Request) {
 		order.Side = "BUY"
 		order.TIF = "GTC"
 		order.Quantity = int(math.Round(positionSize / (buy - stoploss)))
+		if err := validateMaxRisk(coreEquity, order.Quantity, buy, stoploss); err != nil {
+			Errors(w, r, http.StatusBadRequest, err.Error())
+
+			return
+		}
 		//order.AuxPrice = roundFloat(buy) // stop
 		//order.Price = roundFloat(order.AuxPrice + order.AuxPrice*viper.GetFloat64("MARGIN"))
 		order.Price = roundFloat(buy)
@@ -1430,6 +1440,11 @@ func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		size = 1.0
 	}
+	if size > 1 {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position too large: %f (max 1 = 1%% of equity at risk)", size))
+
+		return
+	}
 
 	positionSize := coreEquity * 0.01 * size
 
@@ -1499,6 +1514,11 @@ func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
 		order.OrderType = model.Limit
 		order.TIF = "GTC"
 		order.Quantity = -int(math.Round(positionSize / (buy - stoploss)))
+		if err := validateMaxRisk(coreEquity, order.Quantity, buy, stoploss); err != nil {
+			Errors(w, r, http.StatusBadRequest, err.Error())
+
+			return
+		}
 		//order.AuxPrice = roundFloat(buy) // stop
 		//order.Price = roundFloat(order.AuxPrice + order.AuxPrice*viper.GetFloat64("MARGIN"))
 		order.Price = roundFloat(buy)
@@ -1638,21 +1658,23 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			position = order.Position
 		}
 		if position > 1 {
-			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position too large: %f", position))
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position too large: %f (max 1 = 1%% of equity at risk)", position))
 
 			return
 		}
 
+		summary, err := h.positionService.Summary(ctx)
+		if err != nil {
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+
+			return
+		}
+		totalEquity := summary.EquityWithLoanValue.Amount
+		if h.totalEquity > 0 {
+			totalEquity = h.totalEquity
+		}
+
 		if order.Quantity == 0 {
-			summary, err := h.positionService.Summary(ctx)
-			if err != nil {
-				Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
-
-				return
-			}
-
-			//sgdusd := h.getFX("SGDUSD")
-			totalEquity := summary.EquityWithLoanValue.Amount
 			order.Quantity = int(math.Round((totalEquity * position / 100) / math.Abs((buy - stopLoss))))
 		}
 
@@ -1686,6 +1708,13 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 				buy = closingPrice
 			}
 		}
+
+		if err := validateMaxRisk(totalEquity, order.Quantity, buy, stopLoss); err != nil {
+			Errors(w, r, http.StatusBadRequest, err.Error())
+
+			return
+		}
+
 		if order.ConID == 0 {
 			order.ConID = int(conID)
 		}
@@ -2365,6 +2394,26 @@ func getPrices(prices string) (float64, float64, float64, float64) {
 	}
 
 	return floats[0], floats[1], 0, 0
+}
+
+// validateMaxRisk ensures stop-out loss is at most 1% of equity.
+func validateMaxRisk(equity float64, quantity int, entry, stop float64) error {
+	if equity <= 0 {
+		return fmt.Errorf("cannot validate risk: equity is %0.2f", equity)
+	}
+	stopDist := math.Abs(entry - stop)
+	if stopDist <= 0 {
+		return fmt.Errorf("cannot validate risk: entry and stop are equal (%0.2f)", entry)
+	}
+	risk := math.Abs(float64(quantity)) * stopDist
+	maxRisk := equity * 0.01
+	if risk > maxRisk {
+		return fmt.Errorf(
+			"risk too large: qty=%d risk=%0.2f exceeds 1%% of equity (%0.2f); entry=%0.2f stop=%0.2f",
+			quantity, risk, maxRisk, entry, stop,
+		)
+	}
+	return nil
 }
 
 func roundFloat(value float64) float64 {
