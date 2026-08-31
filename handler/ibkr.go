@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"ibkr/model"
 	"math"
@@ -325,9 +324,11 @@ func (h Ibkr) Summary(w http.ResponseWriter, r *http.Request) {
 
 func (h Ibkr) List(w http.ResponseWriter, r *http.Request) {
 	//h.ibkrService.Init()
-	orders, symbols, totalOrderAmount, pendingOrders, workingOrders, potentialLoss, potentialProfit, err := h.getOrders(r.Context())
+	orders, symbols, totalOrderAmount, pendingOrders, pendingTickers, workingOrders, potentialLoss, potentialProfit, err := h.getOrders(r.Context())
 	if err != nil {
 		Errors(w, r, 500, err.Error())
+
+		return
 	}
 
 	totalEquity := h.totalEquity
@@ -351,6 +352,7 @@ func (h Ibkr) List(w http.ResponseWriter, r *http.Request) {
 		"workingOrders":        workingOrders,
 		"workingOrdersCount":   len(workingOrders),
 		"newOrders":            pendingOrders,
+		"newOrdersList":        pendingTickers,
 		"totalOrderAmount":     totalOrderAmount,
 		"totalPotentialLoss":   potentialLoss,
 		"totalPotentialProfit": potentialProfit,
@@ -358,145 +360,250 @@ func (h Ibkr) List(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h Ibkr) getOrders(ctx context.Context) ([]model.ListOrder, []string, float64, []string, []string, float64, float64, error) {
+func (h Ibkr) getOrders(ctx context.Context) ([]model.ListOrder, []string, float64, []string, []string, []string, float64, float64, error) {
 	var wg sync.WaitGroup
 	workingOrdersByStock := make(map[string]map[string]float64)
 	liveTickersReference := make(map[string]bool)
+
 	var orders []model.ListOrder
 	var symbols []string
-	var err error
-	var totalOrderAmount float64
-	var pendingOrders []string
+	var listErr error
+	var liveTickers []string
 
 	wg.Add(2)
-
 	go func() {
 		defer wg.Done()
-
-		orders, symbols, err = h.ibkrService.ListOrders(ctx)
-		if err != nil {
-			return
-		}
-
+		orders, symbols, listErr = h.ibkrService.ListOrders(ctx)
 	}()
-
 	go func() {
 		defer wg.Done()
-
-		_, liveTickers, _, _ := h.positionService.GetAll(ctx)
-		for _, ticker := range liveTickers {
-			liveTickersReference[ticker] = true
-		}
+		_, liveTickers, _, _ = h.positionService.GetAll(ctx)
 	}()
 	wg.Wait()
 
+	if listErr != nil {
+		return nil, nil, 0, nil, nil, nil, 0, 0, listErr
+	}
+	for _, ticker := range liveTickers {
+		liveTickersReference[ticker] = true
+	}
+
 	var wg2 sync.WaitGroup
-	var m sync.RWMutex
-	pendingOrders = make([]string, 0, len(symbols))
+	var m sync.Mutex
+	closesByTicker := make(map[string]float64)
 
 	wg2.Add(len(orders))
 	for _, order := range orders {
 		go func(order model.ListOrder) {
 			defer wg2.Done()
-			result, _ := h.yahooService.GetStock(order.Ticker, "1d", "5d")
+			result, meta := h.yahooService.GetStock(order.Ticker, "1d", "5d")
 			if len(result.Indicators.Quote) == 0 || len(result.Indicators.Quote[0].Close) == 0 {
-				result, _ = h.yahooService.GetStock(fmt.Sprintf("%s.TO", order.Ticker), "1d", "5d")
+				result, meta = h.yahooService.GetStock(fmt.Sprintf("%s.TO", order.Ticker), "1d", "5d")
+			}
+			if len(result.Indicators.Quote) == 0 || len(result.Indicators.Quote[0].Close) == 0 {
+				return
+			}
+			close := lastValidClose(result, meta)
+			if close <= 0 {
+				return
 			}
 			m.Lock()
-			if len(result.Indicators.Quote) > 0 {
-				closes := result.Indicators.Quote[0].Close
-				if len(closes) == 0 {
-					return
-				}
-				close := closes[len(closes)-1]
-
-				if _, ok := workingOrdersByStock[order.Ticker]; !ok {
-					workingOrdersByStock[order.Ticker] = make(map[string]float64)
-				}
-				workingOrdersByStock[order.Ticker]["Close"] = close
-
-				position := 0.0
-				stopLoss := 0.0
-				if order.OrderType == "Stop" {
-					strValue := strings.Split(order.OrderDesc, " ")[4]
-					strPos := strings.Split(order.OrderDesc, " ")[1]
-					stopLoss, err = strconv.ParseFloat(strings.Replace(strValue, ",", "", 1), 64)
-					if err != nil {
-						fmt.Errorf("error: %w", err)
-					}
-					position, err = strconv.ParseFloat(strings.Replace(strPos, ",", "", 1), 64)
-					if err != nil {
-						fmt.Errorf("error: %w", err)
-					}
-				}
-
-				target := 0.0
-				if order.OrderType == "Limit" {
-					target = order.Price
-					strPos := strings.Split(order.OrderDesc, " ")[1]
-					position, err = strconv.ParseFloat(strings.Replace(strPos, ",", "", 1), 64)
-					if err != nil {
-						fmt.Errorf("error: %w", err)
-					}
-				}
-
-				workingOrdersByStock[order.Ticker]["Position"] = position
-				stopLossPercent := 0.0
-				cadusd := h.getFX("CADUSD")
-				if stopLoss > 0 {
-					stopLossPercent = (close / stopLoss) - 1
-					workingOrdersByStock[order.Ticker]["StopLoss"] = stopLoss
-					workingOrdersByStock[order.Ticker]["SL"] = stopLossPercent
-					workingOrdersByStock[order.Ticker]["PotentialLoss"] = math.Abs(close-stopLoss) * position
-				}
-
-				targetPercent := 0.0
-				if target > 0 {
-					targetPercent = (target / close) - 1
-					workingOrdersByStock[order.Ticker]["Target"] = targetPercent
-					if order.CashCcy == "CAD" {
-						workingOrdersByStock[order.Ticker]["PotentialProfit"] = math.Abs(target-close) * position * cadusd
-					} else {
-						workingOrdersByStock[order.Ticker]["PotentialProfit"] = math.Abs(target-close) * position
-					}
-				}
-			}
-			if strings.Contains(order.OrderDesc, "Buy") && strings.Contains(order.OrderDesc, "Stop") && strings.Contains(order.OrderDesc, "LMT") && order.Status != "Filled" {
-				totalOrderAmount += order.Price * order.Quantity
-				pendingOrders = append(pendingOrders, order.Ticker)
-			}
-			if strings.Contains(order.OrderDesc, "Sell") && strings.Contains(order.OrderDesc, "Stop") && strings.Contains(order.OrderDesc, "LMT") && order.Status != "Filled" {
-				totalOrderAmount -= order.Price * order.Quantity
-				pendingOrders = append(pendingOrders, order.Ticker)
-			}
+			closesByTicker[order.Ticker] = close
 			m.Unlock()
 		}(order)
 	}
-	//h.fileService.Write("Orders", strings.Join(pendingOrders, ","))
 	wg2.Wait()
 
 	if len(symbols) == 0 {
-		return nil, nil, 0, nil, nil, 0, 0, errors.New("cannot get orders")
+		return []model.ListOrder{}, []string{}, 0, []string{}, []string{}, []string{}, 0, 0, nil
+	}
+
+	type pendingEntry struct {
+		entry    float64
+		position float64
+		cashCcy  string
+	}
+	// qty → price, so a ticker with multiple brackets keeps the matching exit legs
+	stopsByTickerQty := make(map[string]map[float64]float64)
+	limitsByTickerQty := make(map[string]map[float64]float64)
+	pendingByTicker := make(map[string]pendingEntry)
+	var totalOrderAmount float64
+
+	for _, order := range orders {
+		if order.Status == "Filled" || order.Status == "Cancelled" || order.Status == "Inactive" {
+			continue
+		}
+		close := closesByTicker[order.Ticker]
+		if close <= 0 {
+			continue
+		}
+		if _, ok := workingOrdersByStock[order.Ticker]; !ok {
+			workingOrdersByStock[order.Ticker] = map[string]float64{"Close": close}
+		} else {
+			workingOrdersByStock[order.Ticker]["Close"] = close
+		}
+
+		switch order.OrderType {
+		case "Stop":
+			parts := strings.Split(order.OrderDesc, " ")
+			if len(parts) <= 4 {
+				continue
+			}
+			stopLoss, _ := strconv.ParseFloat(strings.Replace(parts[4], ",", "", 1), 64)
+			position, _ := strconv.ParseFloat(strings.Replace(parts[1], ",", "", 1), 64)
+			if stopLoss <= 0 || position <= 0 {
+				continue
+			}
+			if stopsByTickerQty[order.Ticker] == nil {
+				stopsByTickerQty[order.Ticker] = make(map[float64]float64)
+			}
+			stopsByTickerQty[order.Ticker][position] = stopLoss
+			// Live exits: keep latest stop on the ticker for workingOrders summary
+			if _, isLive := liveTickersReference[order.Ticker]; isLive {
+				workingOrdersByStock[order.Ticker]["StopLoss"] = stopLoss
+				workingOrdersByStock[order.Ticker]["Position"] = position
+				workingOrdersByStock[order.Ticker]["SL"] = (close / stopLoss) - 1
+				workingOrdersByStock[order.Ticker]["PotentialLoss"] = math.Abs(close-stopLoss) * position
+			}
+		case "Limit":
+			target := order.Price
+			parts := strings.Split(order.OrderDesc, " ")
+			position := 0.0
+			if len(parts) > 1 {
+				position, _ = strconv.ParseFloat(strings.Replace(parts[1], ",", "", 1), 64)
+			}
+			if target <= 0 || position <= 0 {
+				continue
+			}
+			if limitsByTickerQty[order.Ticker] == nil {
+				limitsByTickerQty[order.Ticker] = make(map[float64]float64)
+			}
+			limitsByTickerQty[order.Ticker][position] = target
+			if _, isLive := liveTickersReference[order.Ticker]; isLive {
+				workingOrdersByStock[order.Ticker]["Target"] = (target / close) - 1
+				if workingOrdersByStock[order.Ticker]["Position"] <= 0 {
+					workingOrdersByStock[order.Ticker]["Position"] = position
+				}
+				cadusd := h.getFX("CADUSD")
+				profit := math.Abs(target-close) * position
+				if order.CashCcy == "CAD" {
+					profit *= cadusd
+				}
+				workingOrdersByStock[order.Ticker]["PotentialProfit"] = profit
+			}
+		case "Stop Limit":
+			// Entry parent: "Buy 246 TEVA Stop 37.45 LMT 37.56, GTC" — LMT is entry, not target.
+			parts := strings.Split(order.OrderDesc, " ")
+			position := 0.0
+			entry := order.Price
+			if len(parts) > 6 {
+				position, _ = strconv.ParseFloat(strings.Replace(parts[1], ",", "", 1), 64)
+				entry, _ = strconv.ParseFloat(strings.Replace(parts[6], ",", "", 1), 64)
+			}
+			if entry <= 0 {
+				entry = order.Price
+			}
+			if position <= 0 || entry <= 0 {
+				continue
+			}
+			isPendingEntry := strings.Contains(order.OrderDesc, "Stop") && strings.Contains(order.OrderDesc, "LMT") &&
+				(strings.Contains(order.OrderDesc, "Buy") || strings.Contains(order.OrderDesc, "Sell"))
+			if !isPendingEntry {
+				continue
+			}
+			pendingByTicker[order.Ticker] = pendingEntry{entry: entry, position: position, cashCcy: order.CashCcy}
+			if strings.Contains(order.OrderDesc, "Buy") {
+				totalOrderAmount += entry * position
+			} else {
+				totalOrderAmount -= entry * position
+			}
+		}
 	}
 
 	workingOrders := make([]string, 0, len(symbols))
 	potentialLoss := 0.0
 	potentialProfit := 0.0
 	for ticker, prices := range workingOrdersByStock {
-		if _, ok := liveTickersReference[ticker]; ok {
-			workingOrder := fmt.Sprintf("%s SL %.2f %.2f%% Target %.2f %.2f%%, (%0.2f/%0.2f)", ticker, prices["StopLoss"], 100*prices["SL"], (1+prices["Target"])*prices["Close"], 100*prices["Target"], prices["PotentialLoss"], prices["Position"]*prices["Close"])
-			workingOrders = append(workingOrders, workingOrder)
-			potentialLoss += prices["PotentialLoss"]
-			potentialProfit += prices["PotentialProfit"]
+		if _, ok := liveTickersReference[ticker]; !ok {
+			continue
 		}
+		workingOrders = append(workingOrders, formatOrderSummary(ticker, prices))
+		potentialLoss += prices["PotentialLoss"]
+		potentialProfit += prices["PotentialProfit"]
+	}
 
+	newOrders := make([]string, 0, len(pendingByTicker))
+	newOrdersList := make([]string, 0, len(pendingByTicker))
+	for ticker, ent := range pendingByTicker {
+		newOrdersList = append(newOrdersList, ticker)
+		stopLoss := stopsByTickerQty[ticker][ent.position]
+		target := limitsByTickerQty[ticker][ent.position]
+		ref := ent.entry
+		prices := map[string]float64{
+			"Close":    ref,
+			"Position": ent.position,
+			"StopLoss": stopLoss,
+			"Target":   0,
+		}
+		if stopLoss > 0 && ref > 0 {
+			prices["SL"] = (ref / stopLoss) - 1
+			prices["PotentialLoss"] = math.Abs(ref-stopLoss) * ent.position
+			if ent.cashCcy == "CAD" {
+				prices["PotentialLoss"] *= h.getFX("CADUSD")
+			}
+		}
+		if target > 0 && ref > 0 {
+			prices["Target"] = (target / ref) - 1
+			profit := math.Abs(target-ref) * ent.position
+			if ent.cashCcy == "CAD" {
+				profit *= h.getFX("CADUSD")
+			}
+			prices["PotentialProfit"] = profit
+		}
+		newOrders = append(newOrders, formatOrderSummary(ticker, prices))
 	}
 
 	sort.Slice(workingOrders, func(i, j int) bool {
 		return math.Abs(extractTargetPercentage(workingOrders[i])) < math.Abs(extractTargetPercentage(workingOrders[j]))
-
 	})
-	return orders, symbols, totalOrderAmount, pendingOrders, workingOrders, potentialLoss, potentialProfit, nil
+	sort.Slice(newOrders, func(i, j int) bool {
+		return math.Abs(extractTargetPercentage(newOrders[i])) < math.Abs(extractTargetPercentage(newOrders[j]))
+	})
+	sort.Strings(newOrdersList)
+	return orders, symbols, totalOrderAmount, newOrders, newOrdersList, workingOrders, potentialLoss, potentialProfit, nil
+}
+
+func formatOrderSummary(ticker string, prices map[string]float64) string {
+	return fmt.Sprintf("%s SL %.2f %.2f%% Target %.2f %.2f%%, (%0.2f/%0.2f)",
+		ticker, prices["StopLoss"], 100*prices["SL"],
+		(1+prices["Target"])*prices["Close"], 100*prices["Target"],
+		prices["PotentialLoss"], prices["Position"]*prices["Close"])
+}
+
+// lastValidClose prefers the latest non-zero Yahoo close. When the last bar is
+// null (common API issue), it uses the close at regularMarketTime, then
+// regularMarketPrice, so portfolio risk is not inflated as |0-stop|*qty.
+func lastValidClose(result model.Result2, meta model.Meta) float64 {
+	var closes []float64
+	if len(result.Indicators.Quote) > 0 {
+		closes = result.Indicators.Quote[0].Close
+	}
+	if n := len(closes); n > 0 && closes[n-1] > 0 {
+		return closes[n-1]
+	}
+	if meta.RegularMarketTime > 0 && len(result.Timestamps) == len(closes) {
+		for i, ts := range result.Timestamps {
+			if ts == meta.RegularMarketTime && closes[i] > 0 {
+				return closes[i]
+			}
+		}
+	}
+	for i := len(closes) - 1; i >= 0; i-- {
+		if closes[i] > 0 {
+			return closes[i]
+		}
+	}
+	return meta.RegularMarketPrice
 }
 
 func (h Ibkr) Similar(w http.ResponseWriter, r *http.Request) {
@@ -835,20 +942,33 @@ func (h Ibkr) Order(w http.ResponseWriter, r *http.Request) {
 				order.Price = buy
 			}
 
-			if order.Quantity == 0 {
-				summary, err := h.positionService.Summary(ctx)
-				if err != nil {
-					Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+			if stoploss <= 0 {
+				stoploss = 0.92 * buy
+			}
 
-					return
-				}
+			summary, err := h.positionService.Summary(ctx)
+			if err != nil {
+				Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
 
-				if stoploss <= 0 {
-					stoploss = 0.92 * buy
-				}
+				return
+			}
+			totalEquity := summary.EquityWithLoanValue.Amount
+			if h.totalEquity > 0 {
+				totalEquity = h.totalEquity
+			}
 
-				totalEquity := summary.EquityWithLoanValue.Amount
-				order.Quantity = int(math.Round((totalEquity * position / 100) / math.Abs((buy - stoploss))))
+			qty, qErr := resolveQuantity(order.Quantity, totalEquity, position, buy, stoploss)
+			if qErr != nil {
+				Errors(w, r, http.StatusBadRequest, qErr.Error())
+
+				return
+			}
+			order.Quantity = qty
+
+			if err := h.enforceTradeRisk(ctx, totalEquity, order.Quantity, buy, stoploss); err != nil {
+				Errors(w, r, http.StatusBadRequest, err.Error())
+
+				return
 			}
 
 			order.Price = roundFloat(order.Price)
@@ -862,6 +982,30 @@ func (h Ibkr) Order(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if order.Side == "SELL" {
+			if buy > 0 {
+				totalEquity, eqErr := h.equityAmount(ctx)
+				if eqErr != nil {
+					Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", eqErr.Error()))
+					return
+				}
+				if stoploss > 0 {
+					qty, qErr := resolveQuantity(order.Quantity, totalEquity, position, buy, stoploss)
+					if qErr != nil {
+						Errors(w, r, http.StatusBadRequest, qErr.Error())
+						return
+					}
+					order.Quantity = qty
+					if err := h.enforceTradeRisk(ctx, totalEquity, order.Quantity, buy, stoploss); err != nil {
+						Errors(w, r, http.StatusBadRequest, err.Error())
+						return
+					}
+				} else if order.Quantity > 0 {
+					if err := validateNotional(totalEquity, float64(order.Quantity), buy); err != nil {
+						Errors(w, r, http.StatusBadRequest, err.Error())
+						return
+					}
+				}
+			}
 			if order.OrderType == model.Limit {
 				if target > 0 {
 					order.Price = target
@@ -906,6 +1050,11 @@ func (h Ibkr) MarketSell(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		size = 1.0
 	}
+	if size <= 0 || size > 1 {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position invalid: %f (use 0 < position <= 1; 1 = full position)", size))
+
+		return
+	}
 	ctx := r.Context()
 	positions, tickers, _, err := h.positionService.GetAll(ctx)
 	if err != nil {
@@ -920,7 +1069,7 @@ func (h Ibkr) MarketSell(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(positionsByTicker) == 0 {
-		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("no positions"))
+		Errors(w, r, http.StatusBadRequest, "no positions")
 
 		return
 	}
@@ -934,17 +1083,46 @@ func (h Ibkr) MarketSell(w http.ResponseWriter, r *http.Request) {
 	if len(symbols) > 0 && symbols[0] == "ALL" {
 		symbols = tickers
 	}
+	if len(symbols) == 0 {
+		Errors(w, r, http.StatusBadRequest, "symbol is required")
+
+		return
+	}
+
+	closed := 0
 	for _, symbol := range symbols {
 		isCoveringShort := false
 		pos, ok := positionsByTicker[symbol]
-		if !ok {
+		if !ok || math.Abs(pos.Position) < 1e-9 {
 			continue
 		}
+
+		held := math.Abs(pos.Position)
+		desired := int(math.Round(held * size))
+		if desired <= 0 {
+			continue
+		}
+
+		currentOrders, err := h.ibkrService.GetAll(ctx, map[string]interface{}{
+			"tickers": []string{symbol},
+		})
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("cannot get order for %s: %s", symbol, err.Error()))
+			return
+		}
+
+		// Working exit size (OCA stop+limit share size — use max, don't double-count).
+		//workingExit := workingExitQuantity(currentOrders.Orders, pos.Position < 0)
+		//available := int(math.Floor(held + 1e-9)) - workingExit
+		if pos.Position == 0 {
+			// Already fully covered by working exits — do not sell more (would short/cover past flat).
+			continue
+		}
+
 		var order model.Order
 		order.Ticker = pos.ContractDesc
-		order.Quantity = int(pos.Position * size)
+		order.Quantity = desired
 		if pos.Position < 0 {
-			order.Quantity = -int(pos.Position * size)
 			isCoveringShort = true
 		}
 		order.ConID = pos.Conid
@@ -960,47 +1138,35 @@ func (h Ibkr) MarketSell(w http.ResponseWriter, r *http.Request) {
 		yahooSymbol, ok := symbolsChecklist[strings.Replace(pos.ContractDesc, ".", "-", -1)]
 		if !ok {
 			yahooSymbol = pos.ContractDesc
-			//continue
 		}
 		result, _ := h.yahooService.GetStock(yahooSymbol, "1d", "1w")
 		quote := result.Indicators.Quote
 		if len(quote) == 0 || len(quote[0].Close) == 0 {
 			result1, err := h.ibdService.GetStockQuotes(context.Background(), symbol, time.Now())
 			if err != nil || len(result1) == 0 {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
+				msg := "cannot get price quotes"
+				if err != nil {
+					msg = err.Error()
+				}
+				Errors(w, r, http.StatusInternalServerError, msg)
+				return
 			}
 			quote = result1
 		}
 
 		closes := quote[0].Close
-		if isCoveringShort {
-			order.Price = roundFloat(closes[len(closes)-1] * 1.005)
-		} else {
-			order.Price = roundFloat(closes[len(closes)-1] * 0.995)
+		closingPrice := closes[len(closes)-1]
+		if closingPrice <= 0 {
+			closingPrice = result.Meta.RegularMarketPrice
 		}
-		currentOrders, err := h.ibkrService.GetAll(ctx, map[string]interface{}{
-			"tickers": []string{symbol},
-		})
-		if err != nil {
-			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("cannot get order for %s: %s", symbol, err.Error()))
+		if closingPrice <= 0 {
+			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("invalid closing price for %s: %0.2f", symbol, closingPrice))
 			return
 		}
-
-		if len(currentOrders.Orders) > 0 {
-			currentLimitPosition := 0.0
-			for _, currentOrder := range currentOrders.Orders {
-				if currentOrder.OrderType == "Limit" {
-					currentLimitPosition += currentOrder.TotalSize
-				}
-				if currentOrder.OrderType == "Stop" {
-					currentLimitPosition -= currentOrder.TotalSize
-				}
-			}
-
-			if int(currentLimitPosition) > order.Quantity {
-				Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("exceeds current position %s: (%d)", order.Ticker, int(currentLimitPosition)))
-				return
-			}
+		if isCoveringShort {
+			order.Price = roundFloat(closingPrice * 1.005)
+		} else {
+			order.Price = roundFloat(closingPrice * 0.995)
 		}
 
 		res, err := h.ibkrService.Order(ctx, []model.Order{order})
@@ -1010,39 +1176,101 @@ func (h Ibkr) MarketSell(w http.ResponseWriter, r *http.Request) {
 		}
 
 		responses = append(responses, res)
-		contractResponse, _ := h.updatePosition(ctx, currentOrders, order)
+		remaining := held - float64(order.Quantity)
+		contractResponse, err := h.updatePosition(ctx, currentOrders, order, remaining)
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("cannot update attached orders for %s: %s", order.Ticker, err.Error()))
+			return
+		}
 		responses = append(responses, contractResponse...)
+		closed++
+	}
+
+	if closed == 0 {
+		Errors(w, r, http.StatusBadRequest, "nothing to close")
+
+		return
 	}
 
 	h.success(ctx, w, r, symbols, responses)
 }
 
-func (h Ibkr) updatePosition(ctx context.Context, orders model.AllOrders, order model.Order) ([]model.OrderResponse, error) {
-	var contractOrder model.OrderDetails
+// isExitOrder reports whether o is a working exit leg for the open position.
+// coveringShort: exits are BUY covers; otherwise exits are SELL stops/targets.
+func isExitOrder(o model.OrderDetails, coveringShort bool) bool {
+	status := strings.ToUpper(o.Status)
+	if status == "FILLED" || status == "CANCELLED" || status == "CANCELED" || status == "INACTIVE" {
+		return false
+	}
+	desc := strings.ToUpper(strings.TrimSpace(o.OrderDesc))
+	side := strings.ToUpper(o.Side)
+	isSell := side == "SELL" || side == "S" || strings.HasPrefix(desc, "SELL")
+	isBuy := side == "BUY" || side == "B" || strings.HasPrefix(desc, "BUY")
+	if coveringShort {
+		return isBuy
+	}
+	return isSell
+}
+
+// workingExitQuantity returns shares already spoken for by working exit orders.
+// For OCA brackets (stop+limit), both legs share size — take the max so we don't double-count.
+func workingExitQuantity(orders []model.OrderDetails, coveringShort bool) int {
+	maxExit := 0.0
+	for _, o := range orders {
+		if !isExitOrder(o, coveringShort) {
+			continue
+		}
+		qty := o.RemainingQuantity
+		if qty <= 0 {
+			qty = o.TotalSize
+		}
+		if qty > maxExit {
+			maxExit = qty
+		}
+	}
+	return int(math.Floor(maxExit + 1e-9))
+}
+
+// updatePosition resizes (or cancels) exit legs after a close/cover. It ignores
+// entry/add orders that share the same ConID.
+func (h Ibkr) updatePosition(ctx context.Context, orders model.AllOrders, closeOrder model.Order, remaining float64) ([]model.OrderResponse, error) {
+	coveringShort := strings.EqualFold(closeOrder.Side, "BUY")
 	responses := make([]model.OrderResponse, 0)
 	for _, o := range orders.Orders {
-		if order.ConID == o.Conid {
-			contractOrder = o
+		if closeOrder.ConID != o.Conid || !isExitOrder(o, coveringShort) {
+			continue
+		}
+		if o.Ticker == "" {
+			return nil, fmt.Errorf("no order found")
+		}
 
-			if contractOrder.Ticker == "" {
-				return nil, fmt.Errorf("no order found")
-
-			}
-
-			if o.Price != "" {
-				contractOrder.Price = o.Price
-			}
-			if o.StopPrice != "" {
-				contractOrder.Price = o.StopPrice
-			}
-
-			contractOrder.TotalSize = float64(order.Quantity)
-			contractResponse, err := h.updateContract(ctx, contractOrder)
-			if err != nil {
+		if remaining <= 0 {
+			if _, err := h.ibkrService.Cancel(ctx, o.Ticker, fmt.Sprintf("%d", o.OrderId)); err != nil {
 				return nil, err
 			}
-			responses = append(responses, contractResponse...)
+			continue
 		}
+
+		contractOrder := o
+		if o.Price != "" {
+			contractOrder.Price = o.Price
+		}
+		if o.StopPrice != "" {
+			contractOrder.Price = o.StopPrice
+		}
+		if contractOrder.Side == "" {
+			if coveringShort {
+				contractOrder.Side = "BUY"
+			} else {
+				contractOrder.Side = "SELL"
+			}
+		}
+		contractOrder.TotalSize = remaining
+		contractResponse, err := h.updateContract(ctx, contractOrder)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, contractResponse...)
 	}
 
 	return responses, nil
@@ -1100,26 +1328,25 @@ func (h Ibkr) MarketBuy(w http.ResponseWriter, r *http.Request) {
 	stopLossParam := r.URL.Query().Get("stopLoss")
 	targetStr := r.URL.Query().Get("target")
 	conID, _ := strconv.ParseInt(r.URL.Query().Get("coID"), 10, 32)
-	totalEquity := h.totalEquity
-	if h.totalEquity <= 0 {
-		summary, err := h.positionService.Summary(ctx)
-		if err != nil {
-			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
 
-			return
-		}
-
-		//sgdusd := h.getFX("SGDUSD")
-		totalEquity = summary.EquityWithLoanValue.Amount
-	}
-	_, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
-	if err != nil {
-		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get working orders", err.Error()))
+	symbols := r.URL.Query()["symbol"]
+	if len(symbols) != 1 {
+		Errors(w, r, http.StatusBadRequest, "exactly one symbol is required")
 
 		return
 	}
+	symbol := symbols[0]
 
-	coreEquity := totalEquity - potentialLoss
+	summary, err := h.positionService.Summary(ctx)
+	if err != nil {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+
+		return
+	}
+	totalEquity := summary.EquityWithLoanValue.Amount
+	if h.totalEquity > 0 {
+		totalEquity = h.totalEquity
+	}
 
 	size, err := strconv.ParseFloat(r.URL.Query().Get("position"), 64)
 	if err != nil {
@@ -1133,132 +1360,122 @@ func (h Ibkr) MarketBuy(w http.ResponseWriter, r *http.Request) {
 
 	target, _ := strconv.ParseFloat(targetStr, 64)
 
-	positionSize := coreEquity * 0.01 * size
-
 	symbolsChecklist := make(map[string]string)
 	for _, s := range h.allSymbols {
 		symbolsChecklist[strings.Split(s, ".")[0]] = s
 	}
 
-	var responses []model.OrderResponse
-	symbols := r.URL.Query()["symbol"]
-	for _, symbol := range symbols {
-		var order model.Order
-		order.Ticker = symbol
+	var order model.Order
+	order.Ticker = symbol
 
-		if conID <= 0 {
-			quote, err := h.ibkrService.Search(ctx, order.Ticker)
-			if err != nil {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
-				return
-			}
-			conIDStr := quote[0].ConID
-			for _, q := range quote {
-				if q.Description != "VENTURE" {
-					conIDStr = q.ConID
-				}
-			}
-			for _, q := range quote {
-				if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "NASDAQ" || q.Description == "ARCA" || q.Description == "AMEX" || q.Description == "TSE" {
-					conIDStr = q.ConID
-					break
-				}
-			}
-			conID, err = strconv.ParseInt(conIDStr, 10, 32)
-			if err != nil {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
-
-				return
-			}
-		}
-		order.ConID = int(conID)
-		yahooSymbol, ok := symbolsChecklist[strings.Replace(symbol, ".", "-", -1)]
-		if !ok {
-			yahooSymbol = symbol
-			//continue
-		}
-		yahooSymbol = strings.Replace(strings.Replace(yahooSymbol, ".NYSE", "", -1), ".NASDAQ", "", -1)
-		tickersYahoo := map[string]string{
-			"U.U": "U-UN.TO",
-		}
-		ibkrTicker, ok := tickersYahoo[yahooSymbol]
-		if ok {
-			yahooSymbol = ibkrTicker
-		}
-		result, _ := h.yahooService.GetStock(yahooSymbol, "1d", "1m")
-		quotes := result.Indicators.Quote
-		if len(quotes) == 0 || len(quotes[0].Close) == 0 {
-			fmt.Printf("cannot get price")
-			quotes, err = h.ibdService.GetStockQuotes(context.Background(), symbol, time.Now())
-			if err != nil {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
-
-				return
-			}
-
-		}
-
-		closes := quotes[0].Close
-		buy := roundFloat(closes[len(closes)-1] * 1.003)
-
-		atr := h.yahooService.ATR(quotes[0], 22)
-		sl := 3 * atr
-		stoploss := roundFloat(buy - sl)
-		if stopLossParam != "" {
-			sl, _ = strconv.ParseFloat(stopLossParam, 64)
-			stoploss = roundFloat(buy * (1 - (sl / 100)))
-		}
-
-		if target <= 0 {
-			target = roundFloat(buy * 1.3)
-		}
-		target = roundFloat(target)
-
-		// buy
-		order.CoID = fmt.Sprintf("Parent_%s_%s", order.Ticker, time.Now().Format("2006-01-02 15:04:05"))
-		order.AcctID = viper.GetString("ACCOUNT_ID")
-		order.Side = "BUY"
-		order.OrderType = model.Limit
-		order.Side = "BUY"
-		order.TIF = "GTC"
-		order.Quantity = int(math.Round(positionSize / (buy - stoploss)))
-		if err := validateMaxRisk(coreEquity, order.Quantity, buy, stoploss); err != nil {
-			Errors(w, r, http.StatusBadRequest, err.Error())
-
-			return
-		}
-		//order.AuxPrice = roundFloat(buy) // stop
-		//order.Price = roundFloat(order.AuxPrice + order.AuxPrice*viper.GetFloat64("MARGIN"))
-		order.Price = roundFloat(buy)
-
-		// target
-		takeProfit := order
-		takeProfit.ParentID = order.CoID
-		takeProfit.Side = "SELL"
-		takeProfit.OrderType = "LMT"
-		takeProfit.Price = target
-		takeProfit.CoID = ""
-
-		// stop
-		stopLossOrder := order
-		stopLossOrder.ParentID = order.CoID
-		stopLossOrder.Side = "SELL"
-		stopLossOrder.OrderType = "STP"
-		stopLossOrder.Price = stoploss
-		stopLossOrder.CoID = ""
-
-		res, err := h.ibkrService.Order(ctx, []model.Order{order, takeProfit, stopLossOrder})
+	if conID <= 0 {
+		quote, err := h.ibkrService.Search(ctx, order.Ticker)
 		if err != nil {
-			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("cannot place order for %s", order.Ticker))
+			Errors(w, r, http.StatusInternalServerError, err.Error())
 			return
 		}
+		conIDStr := quote[0].ConID
+		for _, q := range quote {
+			if q.Description != "VENTURE" {
+				conIDStr = q.ConID
+			}
+		}
+		for _, q := range quote {
+			if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "NASDAQ" || q.Description == "ARCA" || q.Description == "AMEX" || q.Description == "TSE" {
+				conIDStr = q.ConID
+				break
+			}
+		}
+		conID, err = strconv.ParseInt(conIDStr, 10, 32)
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, err.Error())
 
-		//res[0].Total = float64(order.Quantity) * order.Price
+			return
+		}
+	}
+	order.ConID = int(conID)
+	yahooSymbol, ok := symbolsChecklist[strings.Replace(symbol, ".", "-", -1)]
+	if !ok {
+		yahooSymbol = symbol
+	}
+	yahooSymbol = strings.Replace(strings.Replace(yahooSymbol, ".NYSE", "", -1), ".NASDAQ", "", -1)
+	tickersYahoo := map[string]string{
+		"U.U": "U-UN.TO",
+	}
+	ibkrTicker, ok := tickersYahoo[yahooSymbol]
+	if ok {
+		yahooSymbol = ibkrTicker
+	}
+	result, _ := h.yahooService.GetStock(yahooSymbol, "1d", "1m")
+	quotes := result.Indicators.Quote
+	if len(quotes) == 0 || len(quotes[0].Close) == 0 {
+		quotes, err = h.ibdService.GetStockQuotes(context.Background(), symbol, time.Now())
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, err.Error())
 
-		responses = append(responses, res)
+			return
+		}
 	}
 
-	h.success(ctx, w, r, symbols, responses)
+	closes := quotes[0].Close
+	closingPrice := closes[len(closes)-1]
+	if closingPrice <= 0 {
+		closingPrice = result.Meta.RegularMarketPrice
+	}
+	if closingPrice <= 0 {
+		Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("invalid closing price for %s: %0.2f", symbol, closingPrice))
+
+		return
+	}
+	buy := roundFloat(closingPrice * 1.003)
+
+	atr := h.yahooService.ATR(quotes[0], 22)
+	sl := 3 * atr
+	stoploss := roundFloat(buy - sl)
+	if stopLossParam != "" {
+		sl, _ = strconv.ParseFloat(stopLossParam, 64)
+		stoploss = roundFloat(buy * (1 - (sl / 100)))
+	}
+
+	if target <= 0 {
+		target = roundFloat(buy * 1.3)
+	}
+	target = roundFloat(target)
+
+	order.CoID = fmt.Sprintf("Parent_%s_%s", order.Ticker, time.Now().Format("2006-01-02 15:04:05"))
+	order.AcctID = viper.GetString("ACCOUNT_ID")
+	order.Side = "BUY"
+	order.OrderType = model.Limit
+	order.TIF = "GTC"
+	order.Quantity = int(math.Round((totalEquity * size / 100) / math.Abs(buy-stoploss)))
+	if err := h.enforceTradeRisk(ctx, totalEquity, order.Quantity, buy, stoploss); err != nil {
+		Errors(w, r, http.StatusBadRequest, err.Error())
+
+		return
+	}
+	order.Price = roundFloat(buy)
+
+	takeProfit := order
+	takeProfit.ParentID = order.CoID
+	takeProfit.Side = "SELL"
+	takeProfit.OrderType = "LMT"
+	takeProfit.Price = target
+	takeProfit.CoID = ""
+
+	stopLossOrder := order
+	stopLossOrder.ParentID = order.CoID
+	stopLossOrder.Side = "SELL"
+	stopLossOrder.OrderType = "STP"
+	stopLossOrder.Price = stoploss
+	stopLossOrder.CoID = ""
+
+	res, err := h.ibkrService.Order(ctx, []model.Order{order, takeProfit, stopLossOrder})
+	if err != nil {
+		Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("cannot place order for %s", order.Ticker))
+		return
+	}
+
+	h.success(ctx, w, r, []string{symbol}, []model.OrderResponse{res})
 }
 func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -1270,33 +1487,36 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 	entry = roundFloat(entry)
 	conID, _ := strconv.ParseInt(r.URL.Query().Get("coID"), 10, 32)
 
-	totalEquity := h.totalEquity
-	if h.totalEquity <= 0 {
-		summary, err := h.positionService.Summary(ctx)
-		if err != nil {
-			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+	symbols := r.URL.Query()["symbol"]
+	if len(symbols) != 1 {
+		Errors(w, r, http.StatusBadRequest, "exactly one symbol is required")
 
-			return
-		}
-
-		//sgdusd := h.getFX("SGDUSD")
-		totalEquity = summary.EquityWithLoanValue.Amount
+		return
 	}
-	//_, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
-	//if err != nil {
-	//	Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get working orders", err.Error()))
-	//
-	//	return
-	//}
+	symbol := symbols[0]
 
-	coreEquity := totalEquity - 0
+	summary, err := h.positionService.Summary(ctx)
+	if err != nil {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+
+		return
+	}
+	totalEquity := summary.EquityWithLoanValue.Amount
+	if h.totalEquity > 0 {
+		totalEquity = h.totalEquity
+	}
 
 	size, err := strconv.ParseFloat(r.URL.Query().Get("position"), 64)
 	if err != nil {
 		size = 1.0
 	}
+	if size > 1 {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("position too large: %f (max 1 = 1%% of equity at risk)", size))
 
-	positionSize := coreEquity * 0.01 * size
+		return
+	}
+
+	positionSize := totalEquity * 0.01 * size
 	quantity := 0.0
 	total := 0.0
 	stopLoss := 0.0
@@ -1306,68 +1526,85 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 		symbolsChecklist[strings.Split(s, ".")[0]] = s
 	}
 
-	symbols := r.URL.Query()["symbol"]
-	for _, symbol := range symbols {
-		var order model.Order
-		order.Ticker = symbol
+	var order model.Order
+	order.Ticker = symbol
 
-		if conID <= 0 {
-			tickersIBKR := map[string]string{
-				"U-UN": "U.UN",
-			}
+	if conID <= 0 {
+		tickersIBKR := map[string]string{
+			"U-UN": "U.UN",
+		}
 
-			ibkrTicker, ok := tickersIBKR[order.Ticker]
-			if ok {
-				order.Ticker = ibkrTicker
-			}
-			quote, err := h.ibkrService.Search(ctx, order.Ticker)
-			if err != nil {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
-				return
-			}
-			conIDStr := quote[0].ConID
-			for _, q := range quote {
-				if q.Description != "VENTURE" {
-					conIDStr = q.ConID
-				}
-			}
-			for _, q := range quote {
-				if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" || q.Description == "BATS" {
-					conIDStr = q.ConID
-					break
-				}
-			}
-			for _, q := range quote {
-				if q.Description == strings.ToUpper(exchange) {
-					conIDStr = q.ConID
-					break
-				}
-			}
-			conID, err = strconv.ParseInt(conIDStr, 10, 32)
-			if err != nil {
-				Errors(w, r, http.StatusInternalServerError, err.Error())
-
-				return
+		ibkrTicker, ok := tickersIBKR[order.Ticker]
+		if ok {
+			order.Ticker = ibkrTicker
+		}
+		quote, err := h.ibkrService.Search(ctx, order.Ticker)
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+		conIDStr := quote[0].ConID
+		for _, q := range quote {
+			if q.Description != "VENTURE" {
+				conIDStr = q.ConID
 			}
 		}
-		order.ConID = int(conID)
+		for _, q := range quote {
+			if q.Description == strings.ToUpper(exchange) || q.Description == "NYSE" || q.Description == "TSE" || q.Description == "NASDAQ" || q.Description == "AMEX" || q.Description == "ARCA" || q.Description == "BATS" {
+				conIDStr = q.ConID
+				break
+			}
+		}
+		for _, q := range quote {
+			if q.Description == strings.ToUpper(exchange) {
+				conIDStr = q.ConID
+				break
+			}
+		}
+		conID, err = strconv.ParseInt(conIDStr, 10, 32)
+		if err != nil {
+			Errors(w, r, http.StatusInternalServerError, err.Error())
+
+			return
+		}
+	}
+	order.ConID = int(conID)
+
+	buy := 0.0
+	if entry > 0 {
+		buy = roundFloat(entry)
+	}
+
+	stopLossPercent := 0.0
+	if stopLossParam != "" {
+		parsed, parseErr := strconv.ParseFloat(stopLossParam, 64)
+		if parseErr != nil || parsed <= 0 {
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("invalid stopLoss: %s", stopLossParam))
+
+			return
+		}
+		stopLossPercent = parsed
+	}
+
+	// When entry + stopLoss% are both provided, size from those alone (no Yahoo/ATR).
+	needQuotes := buy <= 0 || stopLossPercent <= 0
+	var quotes []model.Quote
+	if needQuotes {
 		yahooSymbol, ok := symbolsChecklist[strings.Replace(symbol, ".", "-", -1)]
 		if !ok {
 			yahooSymbol = symbol
-			//continue
 		}
 		yahooSymbol = strings.Replace(strings.Replace(yahooSymbol, ".NYSE", "", -1), ".NASDAQ", "", -1)
 		tickersYahoo := map[string]string{
 			"U.UN": "U-UN.TO",
 			"U-UN": "U-UN.TO",
 		}
-		ibkrTicker, ok := tickersYahoo[yahooSymbol]
-		if ok {
+		if ibkrTicker, ok := tickersYahoo[yahooSymbol]; ok {
 			yahooSymbol = ibkrTicker
 		}
 
 		result, _ := h.yahooService.GetStock(yahooSymbol, "1d", "1y")
-		quotes := result.Indicators.Quote
+		quotes = result.Indicators.Quote
 		if len(quotes) == 0 || len(quotes[0].Close) == 0 {
 			quotes, err = h.ibdService.GetStockQuotes(context.Background(), symbol, time.Now())
 			if err != nil {
@@ -1382,36 +1619,55 @@ func (h Ibkr) Preview(w http.ResponseWriter, r *http.Request) {
 		if closingPrice <= 0 {
 			closingPrice = result.Meta.RegularMarketPrice
 		}
+		if buy <= 0 {
+			buy = roundFloat(closingPrice * 1.003)
+		}
+	}
 
-		buy := roundFloat(closingPrice * 1.003)
-		if entry > 0 {
-			buy = roundFloat(entry)
+	if stopLossPercent > 0 {
+		if strings.ToLower(side) == "sell" {
+			stopLoss = roundFloat(buy * (1 + (stopLossPercent / 100)))
+		} else {
+			stopLoss = roundFloat(buy * (1 - (stopLossPercent / 100)))
+		}
+	} else {
+		if len(quotes) == 0 {
+			Errors(w, r, http.StatusBadRequest, "stopLoss is required when quotes are unavailable")
+
+			return
 		}
 		atr := h.yahooService.ATR(quotes[0], 22)
 		sl := 3 * atr
-		stopLoss = roundFloat(buy - sl)
-		if stopLossParam != "" {
-			sl, _ = strconv.ParseFloat(stopLossParam, 64)
-			if strings.ToLower(side) == "sell" {
-				stopLoss = roundFloat(buy * (1 + (sl / 100)))
-			} else {
-				stopLoss = roundFloat(buy * (1 - (sl / 100)))
-			}
-		}
-
 		if strings.ToLower(side) == "sell" {
-			quantity = math.Round(positionSize / (stopLoss - buy))
+			stopLoss = roundFloat(buy + sl)
 		} else {
-			quantity = math.Round(positionSize / (buy - stopLoss))
+			stopLoss = roundFloat(buy - sl)
 		}
-		total = quantity * buy
-
+		if buy > 0 {
+			stopLossPercent = 100 * math.Abs(buy-stopLoss) / buy
+		}
 	}
 
+	if buy <= 0 || stopLoss <= 0 || buy == stopLoss {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("invalid entry/stop: entry=%0.2f stop=%0.2f", buy, stopLoss))
+
+		return
+	}
+
+	if strings.ToLower(side) == "sell" {
+		quantity = math.Round(positionSize / (stopLoss - buy))
+	} else {
+		quantity = math.Round(positionSize / (buy - stopLoss))
+	}
+	total = quantity * buy
+
 	Success(w, r, map[string]interface{}{
-		"quantity": quantity,
-		"position": fmt.Sprintf("Amount: %0.2f, loss %0.2f, 1%% loss %0.2f stopLevel: %0.2f (%0.2f%%) ", total, positionSize, total*0.01, stopLoss, 100*positionSize/total),
-		"record":   fmt.Sprintf("recAll %s %0.0f %0.2f %s", symbols[0], math.Round(quantity), total/quantity, time.Now().Format("2006/01/02")),
+		"quantity":        quantity,
+		"entry":           buy,
+		"stopLoss":        stopLoss,
+		"stopLossPercent": roundFloat(stopLossPercent),
+		"position":        fmt.Sprintf("Amount: %0.2f, loss %0.2f, 1%% loss %0.2f stopLevel: %0.2f (%0.2f%%) ", total, positionSize, total*0.01, stopLoss, stopLossPercent),
+		"record":          fmt.Sprintf("recAll %s %0.0f %0.2f %s", symbol, math.Round(quantity), total/quantity, time.Now().Format("2006/01/02")),
 	})
 }
 func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
@@ -1427,7 +1683,7 @@ func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
 
 	//sgdusd := h.getFX("SGDUSD")
 	totalEquity := summary.EquityWithLoanValue.Amount
-	_, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
+	_, _, _, _, _, _, potentialLoss, _, err := h.getOrders(r.Context())
 	if err != nil {
 		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get working orders", err.Error()))
 
@@ -1498,7 +1754,16 @@ func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
 		}
 
 		closes := quotes[0].Close
-		buy := roundFloat(closes[len(closes)-1] * 0.997)
+		closingPrice := closes[len(closes)-1]
+		if closingPrice <= 0 {
+			closingPrice = result.Meta.RegularMarketPrice
+		}
+		if closingPrice <= 0 {
+			Errors(w, r, http.StatusInternalServerError, fmt.Sprintf("invalid closing price for %s: %0.2f", symbol, closingPrice))
+
+			return
+		}
+		buy := roundFloat(closingPrice * 0.997)
 		sl := 4.0
 		stoploss := roundFloat(buy * (1 + (sl / 100)))
 		if stopLossParam != "" {
@@ -1514,7 +1779,7 @@ func (h Ibkr) MarketSell2(w http.ResponseWriter, r *http.Request) {
 		order.OrderType = model.Limit
 		order.TIF = "GTC"
 		order.Quantity = -int(math.Round(positionSize / (buy - stoploss)))
-		if err := validateMaxRisk(coreEquity, order.Quantity, buy, stoploss); err != nil {
+		if err := h.enforceTradeRisk(ctx, coreEquity, order.Quantity, buy, stoploss); err != nil {
 			Errors(w, r, http.StatusBadRequest, err.Error())
 
 			return
@@ -1577,6 +1842,17 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 		Errors(w, r, http.StatusInternalServerError, err.Error())
 
 		return
+	}
+
+	urlPosition := 0.0
+	if p := r.URL.Query().Get("position"); p != "" {
+		parsed, err := strconv.ParseFloat(p, 64)
+		if err != nil || parsed <= 0 {
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("invalid position: %s", p))
+
+			return
+		}
+		urlPosition = parsed
 	}
 
 	var responses []model.OrderResponse
@@ -1654,7 +1930,9 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 		}
 		buy, stopLoss, target, target2 := getPrices(order.Prices)
 		position := 0.25
-		if order.Position > 0 {
+		if urlPosition > 0 {
+			position = urlPosition
+		} else if order.Position > 0 {
 			position = order.Position
 		}
 		if position > 1 {
@@ -1674,14 +1952,6 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			totalEquity = h.totalEquity
 		}
 
-		if order.Quantity == 0 {
-			order.Quantity = int(math.Round((totalEquity * position / 100) / math.Abs((buy - stopLoss))))
-		}
-
-		if target == 0 {
-			target = buy * 1.30
-		}
-
 		if order.Marketprice {
 			symbolsChecklist := make(map[string]string)
 			for _, s := range h.allSymbols {
@@ -1690,7 +1960,6 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			yahooSymbol, ok := symbolsChecklist[strings.Replace(order.Ticker, ".", "-", -1)]
 			if !ok {
 				yahooSymbol = order.Ticker
-				//continue
 			}
 			tickersYahoo := map[string]string{
 				"U.UN":     "U-UN.TO",
@@ -1703,13 +1972,27 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			result, _ := h.yahooService.GetStock(yahooSymbol, "1d", "1w")
 			if len(result.Indicators.Quote) > 0 && len(result.Indicators.Quote[0].Close) > 0 {
 				closes := result.Indicators.Quote[0].Close
-				closingPrice := closes[len(closes)-1]
-
-				buy = closingPrice
+				buy = closes[len(closes)-1]
 			}
 		}
 
-		if err := validateMaxRisk(totalEquity, order.Quantity, buy, stopLoss); err != nil {
+		if target == 0 {
+			if order.Side == "SELL" {
+				target = buy * 0.80
+			} else {
+				target = buy * 1.30
+			}
+		}
+
+		qty, err := resolveQuantity(order.Quantity, totalEquity, position, buy, stopLoss)
+		if err != nil {
+			Errors(w, r, http.StatusBadRequest, err.Error())
+
+			return
+		}
+		order.Quantity = qty
+
+		if err := h.enforceTradeRisk(ctx, totalEquity, order.Quantity, buy, stopLoss); err != nil {
 			Errors(w, r, http.StatusBadRequest, err.Error())
 
 			return
@@ -1725,20 +2008,27 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			order.TIF = "GTC"
 		}
 
-		var halfQty1, halfQty2 int
-		halfQty1 = int(order.Quantity / 2)
-		halfQty2 = order.Quantity - halfQty1
+		halfQty1 := int(order.Quantity / 2)
+		halfQty2 := order.Quantity - halfQty1
+
+		isShort := strings.ToUpper(order.Side) == "SELL"
+		exitSide := "SELL"
+		if isShort {
+			exitSide = "BUY"
+		}
 
 		takeProfit := order
 		takeProfit.ParentID = order.CoID
-		takeProfit.Side = "SELL"
+		takeProfit.Side = exitSide
 		takeProfit.OrderType = "LMT"
 		takeProfit.Price = target
 		takeProfit.CoID = ""
 
 		takeProfit2 := takeProfit
-		if target2 > target {
-			takeProfit2.ParentID = ""
+		// Long: target2 above target; short: target2 below target (further profit).
+		hasSecondTarget := target2 > 0 && ((isShort && target2 < target) || (!isShort && target2 > target))
+		if hasSecondTarget {
+			takeProfit2.ParentID = order.CoID
 			takeProfit2.Price = target2
 			takeProfit2.Quantity = halfQty2
 			takeProfit.Quantity = halfQty1
@@ -1746,7 +2036,7 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 
 		stopLossOrder := order
 		stopLossOrder.ParentID = order.CoID
-		stopLossOrder.Side = "SELL"
+		stopLossOrder.Side = exitSide
 		stopLossOrder.OrderType = "STP"
 		stopLossOrder.Price = stopLoss
 		stopLossOrder.CoID = ""
@@ -1759,19 +2049,10 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 			} else {
 				order.AuxPrice = buy
 				order.Price = order.AuxPrice - order.AuxPrice*viper.GetFloat64("MARGIN")
-
-				stopLossOrder.Side = "BUY"
-				takeProfit.Price = buy * 0.8
-				takeProfit.Side = "BUY"
-				takeProfit2.Side = "BUY"
 			}
 		}
 		if order.OrderType == model.Limit {
-			if order.Side == "BUY" {
-				order.Price = buy
-			} else {
-				order.Price = buy
-			}
+			order.Price = buy
 		}
 
 		order.AuxPrice = roundFloat(order.AuxPrice)
@@ -1781,13 +2062,12 @@ func (h Ibkr) BracketOrder(w http.ResponseWriter, r *http.Request) {
 		takeProfit2.Price = roundFloat(takeProfit2.Price)
 
 		var res model.OrderResponse
-		//if target2 > target {
-		//	res, err = h.ibkrService.Order(ctx, []model.Order{order, takeProfit, stopLossOrder})
-		//} else {
-		res, err = h.ibkrService.Order(ctx, []model.Order{order, takeProfit, stopLossOrder})
-		//}
+		if hasSecondTarget {
+			res, err = h.ibkrService.Order(ctx, []model.Order{order, takeProfit, takeProfit2, stopLossOrder})
+		} else {
+			res, err = h.ibkrService.Order(ctx, []model.Order{order, takeProfit, stopLossOrder})
+		}
 		if err != nil {
-			fmt.Errorf("cannot place order for %s: %w", order.Ticker, err)
 			Errors(w, r, http.StatusInternalServerError, err.Error())
 
 			return
@@ -1834,7 +2114,7 @@ func (h Ibkr) OCA(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
-		_, stopLoss, target, _ := getPrices(order.Prices)
+		buy, stopLoss, target, _ := getPrices(order.Prices)
 		if order.ConID == 0 {
 			order.ConID = int(conID)
 		}
@@ -1846,16 +2126,30 @@ func (h Ibkr) OCA(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if order.Quantity <= 1 {
-			summary, err := h.positionService.Summary(ctx)
-			if err != nil {
-				Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("quantity must be > 1 for OCA orders (got %d)", order.Quantity))
+
+			return
+		}
+
+		if order.Price <= 0 {
+			order.Price = buy
+		}
+		equity, err := h.equityAmount(ctx)
+		if err != nil {
+			Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+
+			return
+		}
+		if stopLoss > 0 {
+			if err := h.enforceTradeRisk(ctx, equity, order.Quantity, order.Price, stopLoss); err != nil {
+				Errors(w, r, http.StatusBadRequest, err.Error())
 
 				return
 			}
+		} else if err := validateNotional(equity, float64(order.Quantity), order.Price); err != nil {
+			Errors(w, r, http.StatusBadRequest, err.Error())
 
-			//sgdusd := h.getFX("SGDUSD")
-			totalEquity := summary.EquityWithLoanValue.Amount
-			order.Quantity = int(math.Round((totalEquity * 0.25 / 100) / (order.Price - stopLoss)))
+			return
 		}
 
 		if target <= 0 {
@@ -1970,6 +2264,32 @@ func (h Ibkr) Update(w http.ResponseWriter, r *http.Request) {
 			//updateOrder.AuxPrice = order.Aux
 			updateOrder.Side = order.Side
 		}
+
+		if updateOrder.Quantity > 0 {
+			equity, eqErr := h.equityAmount(ctx)
+			if eqErr != nil {
+				Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", eqErr.Error()))
+
+				return
+			}
+			entry := buy
+			if entry <= 0 {
+				entry = updateOrder.Price
+			}
+			if entry > 0 && stopLoss > 0 {
+				if err := h.enforceTradeRisk(ctx, equity, updateOrder.Quantity, entry, stopLoss); err != nil {
+					Errors(w, r, http.StatusBadRequest, err.Error())
+
+					return
+				}
+			} else if updateOrder.Price > 0 {
+				if err := validateNotional(equity, float64(updateOrder.Quantity), updateOrder.Price); err != nil {
+					Errors(w, r, http.StatusBadRequest, err.Error())
+
+					return
+				}
+			}
+		}
 		//if order.OrderType == model.StopLimit {
 		//	if order.Side == "BUY" {
 		//		order.AuxPrice = buy
@@ -2075,6 +2395,17 @@ func (h Ibkr) Contracts(w http.ResponseWriter, r *http.Request) {
 	if request.Quantity > 0 {
 		order.TotalSize = float64(request.Quantity)
 	}
+	equity, err := h.equityAmount(ctx)
+	if err != nil {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("%v: cannot get summary", err.Error()))
+
+		return
+	}
+	if err := validateNotional(equity, order.TotalSize, request.Price); err != nil {
+		Errors(w, r, http.StatusBadRequest, err.Error())
+
+		return
+	}
 	responses, err := h.updateContract(ctx, order)
 	if err != nil {
 		Errors(w, r, http.StatusInternalServerError, err.Error())
@@ -2112,6 +2443,12 @@ func (h Ibkr) Merge(w http.ResponseWriter, r *http.Request) {
 	}
 	if totalQuantity == 0.0 {
 		Errors(w, r, http.StatusInternalServerError, "no quantity to update")
+
+		return
+	}
+
+	if len(currentOrders) < 2 {
+		Errors(w, r, http.StatusBadRequest, fmt.Sprintf("need at least 2 open orders to merge, got %d", len(currentOrders)))
 
 		return
 	}
@@ -2396,21 +2733,137 @@ func getPrices(prices string) (float64, float64, float64, float64) {
 	return floats[0], floats[1], 0, 0
 }
 
-// validateMaxRisk ensures stop-out loss is at most 1% of equity.
-func validateMaxRisk(equity float64, quantity int, entry, stop float64) error {
+const (
+	maxRiskFraction          = 0.01  // max stop risk per trade
+	minStopFraction          = 0.005 // min |entry-stop|/entry (blocks tiny-stop fat fingers)
+	maxNotionalFraction      = 0.25  // max |qty|*entry / equity
+	maxPortfolioRiskFraction = 0.15  // max open stop risk + this trade
+	quantityMatchTolerance   = 0.10  // given vs formula-derived qty
+)
+
+func deriveQuantity(equity, position, entry, stop float64) int {
+	stopDist := math.Abs(entry - stop)
+	if equity <= 0 || position <= 0 || stopDist <= 0 {
+		return 0
+	}
+	return int(math.Round((equity * position / 100) / stopDist))
+}
+
+// resolveQuantity uses the formula-derived size when given is 0; otherwise requires
+// |given - derived| / derived <= 10% to catch fat-finger qty (e.g. clipboard paste).
+func resolveQuantity(given int, equity, position, entry, stop float64) (int, error) {
+	derived := deriveQuantity(equity, position, entry, stop)
+	if derived <= 0 {
+		return 0, fmt.Errorf(
+			"cannot derive quantity: equity=%0.2f position=%0.2f entry=%0.2f stop=%0.2f",
+			equity, position, entry, stop,
+		)
+	}
+	if given == 0 {
+		return derived, nil
+	}
+	givenAbs := math.Abs(float64(given))
+	delta := math.Abs(givenAbs-float64(derived)) / float64(derived)
+	if delta > quantityMatchTolerance {
+		return 0, fmt.Errorf(
+			"quantity mismatch: given=%d derived=%d (delta %0.1f%% > %0.0f%%); equity=%0.0f position=%0.2f entry=%0.2f stop=%0.2f",
+			given, derived, 100*delta, 100*quantityMatchTolerance, equity, position, entry, stop,
+		)
+	}
+	return given, nil
+}
+
+// validateTradeRisk enforces per-trade stop distance, stop risk, and notional caps.
+func validateTradeRisk(equity float64, quantity int, entry, stop float64) error {
 	if equity <= 0 {
 		return fmt.Errorf("cannot validate risk: equity is %0.2f", equity)
+	}
+	if entry <= 0 {
+		return fmt.Errorf("cannot validate risk: invalid entry %0.2f", entry)
+	}
+	qty := math.Abs(float64(quantity))
+	if qty <= 0 {
+		return fmt.Errorf("cannot validate risk: quantity is %d", quantity)
 	}
 	stopDist := math.Abs(entry - stop)
 	if stopDist <= 0 {
 		return fmt.Errorf("cannot validate risk: entry and stop are equal (%0.2f)", entry)
 	}
-	risk := math.Abs(float64(quantity)) * stopDist
-	maxRisk := equity * 0.01
+	stopPct := stopDist / entry
+	if stopPct < minStopFraction {
+		return fmt.Errorf(
+			"stop too tight: %0.2f%% of entry (min %0.2f%%); entry=%0.2f stop=%0.2f",
+			100*stopPct, 100*minStopFraction, entry, stop,
+		)
+	}
+	risk := qty * stopDist
+	maxRisk := equity * maxRiskFraction
 	if risk > maxRisk {
 		return fmt.Errorf(
 			"risk too large: qty=%d risk=%0.2f exceeds 1%% of equity (%0.2f); entry=%0.2f stop=%0.2f",
 			quantity, risk, maxRisk, entry, stop,
+		)
+	}
+	notional := qty * entry
+	maxNotional := equity * maxNotionalFraction
+	if notional > maxNotional {
+		return fmt.Errorf(
+			"notional too large: qty=%d notional=%0.2f exceeds %0.0f%% of equity (%0.2f); entry=%0.2f",
+			quantity, notional, 100*maxNotionalFraction, maxNotional, entry,
+		)
+	}
+	return nil
+}
+
+// validateMaxRisk is kept as an alias for older call sites/tests.
+func validateMaxRisk(equity float64, quantity int, entry, stop float64) error {
+	return validateTradeRisk(equity, quantity, entry, stop)
+}
+
+func (h Ibkr) equityAmount(ctx context.Context) (float64, error) {
+	summary, err := h.positionService.Summary(ctx)
+	if err != nil {
+		return 0, err
+	}
+	totalEquity := summary.EquityWithLoanValue.Amount
+	if h.totalEquity > 0 {
+		totalEquity = h.totalEquity
+	}
+	return totalEquity, nil
+}
+
+func (h Ibkr) enforceTradeRisk(ctx context.Context, equity float64, quantity int, entry, stop float64) error {
+	if err := validateTradeRisk(equity, quantity, entry, stop); err != nil {
+		return err
+	}
+	_, _, _, _, _, _, openRisk, _, err := h.getOrders(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot validate portfolio risk: %w", err)
+	}
+	newRisk := math.Abs(float64(quantity)) * math.Abs(entry-stop)
+	maxPortfolio := equity * maxPortfolioRiskFraction
+	if openRisk+newRisk > maxPortfolio {
+		return fmt.Errorf(
+			"portfolio risk too large: open=%0.2f + new=%0.2f exceeds %0.0f%% of equity (%0.2f)",
+			openRisk, newRisk, 100*maxPortfolioRiskFraction, maxPortfolio,
+		)
+	}
+	return nil
+}
+
+func validateNotional(equity float64, quantity float64, price float64) error {
+	if equity <= 0 {
+		return fmt.Errorf("cannot validate notional: equity is %0.2f", equity)
+	}
+	if price <= 0 || quantity == 0 {
+		return nil
+	}
+	notional := math.Abs(quantity) * price
+	maxNotional := equity * maxNotionalFraction
+	if notional > maxNotional {
+		return fmt.Errorf(
+			"notional too large: qty=%0.0f notional=%0.2f exceeds %0.0f%% of equity (%0.2f); price=%0.2f",
+			quantity, notional, 100*maxNotionalFraction, maxNotional, price,
 		)
 	}
 	return nil

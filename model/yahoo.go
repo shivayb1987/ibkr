@@ -34,6 +34,7 @@ type Result2 struct {
 type Meta struct {
 	Symbol             string  `json:"symbol"`
 	RegularMarketPrice float64 `json:"regularMarketPrice"`
+	RegularMarketTime  int     `json:"regularMarketTime"`
 	FiftyTwoWeekHigh   float64 `json:"fiftyTwoWeekHigh"`
 	FiftyTwoWeekLow    float64 `json:"fiftyTwoWeekLow"`
 	FullExchangeName   string  `json:"fullExchangeName"`

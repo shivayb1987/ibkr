@@ -1,9 +1,13 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+export CURSOR_API_KEY="crsr_8d35df4084b4a92cadd3bc7e0399f2191f5445045c94723390d734f94290bb87"   # Cursor Dashboard → Integrations / API Keys
+
 export FZF_DEFAULT_COMMAND='rg --files'
 
 export PATH=$HOME/Library/Python/3.10/bin:$PATH
+export PATH="$HOME/.local/bin:$PATH"
+alias ask-cursor='/Users/1041803/workspaces/ibkr/bin/cursor-prompt.sh'
 
 #use Neovim as "preferred editor"
 export VISUAL=nvim
@@ -86,7 +90,9 @@ ZSH_THEME="robbyrussell"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
+# export ZSH_COMPDUMP=/tmp/zcompdump-$USER
 source $ZSH/oh-my-zsh.sh
+source ~/.bashrc
 
 # User configuration
 
@@ -113,13 +119,33 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+#
+
+export Black='\033[0;30m'
+export Dark='\033[1;30m'
+export Red='\033[0;31m'
+export Green='\033[0;32m'
+export Yellow='\033[1;33m'
+export Blue='\033[0;34m'
+export Purple='\033[0;35m'
+export Cyan='\033[0;36m'
+export White='\033[1;37m'
+export NC='\033[0m'
+
+# IBKR trading helpers (versioned in stocks repo)
+source "$HOME/workspaces/stocks/ibkr_trading.sh"
+
+PageText='#:~:text'
 
 alias ktl="kubectl"
 alias ups="git push --set-upstream origin"
 alias uat="gbd uat; gco master; gl; gco -b uat; ups uat"
 
 gcof() {
-    gco feature/DST-"$1"
+    gco feature/DPD-"$1"
+}
+gcob() {
+    gco -b feature/DPD-"$1"
 }
 dev() {
   gco master;
@@ -128,168 +154,101 @@ dev() {
   gco -b dev/shiva;
   ups dev/shiva;
 }
+rebase() {
+  currentBranch=$(git branch | grep "*" | awk '{print $2}')
+  gco $1
+  gl
+  gco $currentBranch
+  echo "Proceed?" && read sdfd
+  git rebase -i $1
+}
 
 cmt() {
-  gc -m "[DST-"$1"]: "$2""
-  git push --set-upstream origin feature/DST-"$1"
+  gc -m "[DPD-"$1"]: "$2""
+  git push --set-upstream origin feature/DPD-"$1"
+  gst
+}
+gmm() {
+  gc -m "$1"
+  git push
   gst
 }
 bug() {
-  gc -m "[DST-"$1"]: "$2""
-  git push --set-upstream origin bugfix/DST-"$1"
+  gc -m "[DPD-"$1"]: "$2""
+  git push --set-upstream origin bugfix/DPD-"$1"
   gst
 }
 
 alias useuat="kubectl config use-context gke_fpon-224503_asia-southeast1_fpon-uat"
 alias useprod="kubectl config use-context gke_fponprd_asia-southeast1_fpon-cluster"
-alias dbuat="useuat; kubectl port-forward svc/sql-proxy 3301:3306"
-alias dbprod="useprod; kubectl port-forward svc/sql-proxy 3306:3306"
+# alias dbprod="useprod; kill -9 $(lsof -t -i tcp:3128); gcloud compute ssh bastion --zone asia-southeast1-c --project fponprd --tunnel-through-iap -- -fNL '*:3128:127.0.0.1:3128'
+# ; kubectl port-forward deployment/sql-proxy-fponprod -n database  3306:3306 &"
+dbuat() {
+  kill -9 $(lsof -t -i tcp:3128);
+  gcloud config set project fpon-224503;
+  gcloud container clusters get-credentials sqlproxy-preprod-ap --zone=asia-southeast1;
+  gcloud compute ssh bastion --zone asia-southeast1-c --project fpon-224503 --tunnel-through-iap -- -fNL '*:3128:127.0.0.1:3128'
+  export HTTPS_PROXY=127.0.0.1:3128 NO_PROXY='.com'
 
-trading() {
-  open https://mail.google.com/mail/u/0/\#search/from%3ATradingAssistant%40interactivebrokers.com
-}
-stats() {
-  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863&range=T7
-}
-get() {
-  curl http://localhost:8085/orders\?symbol\="$1" | json_pp
-}
-securities() {
-  curl http://localhost:8085/securities | json_pp
-}
-active() {
-  curl http://localhost:8085/yahoo/active | json_pp
-}
-pos() {
-  if [ "$#" -gt 0 ]; then
-    curl http://localhost:8085/positions\?loss\=true | json_pp
-    return
-  fi
+  kubectl get deployments -n database;
+  gcloud compute ssh bastion --zone asia-southeast1-c --project fpon-224503 --tunnel-through-iap -- -fNL '*:3128:127.0.0.1:3128';
+  kubectl port-forward deployment/sql-proxy-fponstaging -n database  3301:3306 &
 
-  curl http://localhost:8085/positions | json_pp
+  # ssh -NT -L '127.0.0.1:3301:10.45.144.219:3306' shiva_yb_fairprice_com_sg@35.240.158.28
 }
-list() {
-  curl http://localhost:8085/list | json_pp
-}
-summary() {
-  curl http://localhost:8085/summary | json_pp
-}
-init() {
-  curl \
---url  https://localhost:8080/v1/api/iserver/auth/ssodh/init\?publish\=true\&compete\=true \
---request POST \
---header 'Content-Type:application/json' \
---data '{}' --insecure
-}
-logout() {
-  curl https://localhost:8080/v1/api/logout --insecure
-}
-delete() {
-  # if [[ ! -z $2 ]]; then
-  #   curl --request DELETE --url http://localhost:8085/orders/"$1"?orderID="$1" | json_pp
-  #   return
-  # fi
-
-  for symbol in "$@"
-  do
-    curl --request DELETE --url http://localhost:8085/orders/"$symbol" | json_pp
-  done
-}
-others() {
-  curl http://localhost:8085/similar/"$1" | json_pp
-}
-reply() {
- curl --url http://localhost:8085/reply/"$1" --request POST | json_pp
+dbgt() {
+  ssh -NT -L '127.0.0.1:3302:10.47.0.191:3306'  shiva_yb_fairprice_com_sg@35.240.158.28
 }
 
-req() {
-  #!/bin/bash
+dbOffers() {
+  kill -9 $(lsof -t -i tcp:3128);
+  gcloud config set project fponprd
+  gcloud container clusters get-credentials sqlproxy-prod-ap --zone=asia-southeast1
+  gcloud compute ssh bastion --zone asia-southeast1-c --project fponprd --tunnel-through-iap -- -fNL '*:3128:127.0.0.1:3128'
+  export HTTPS_PROXY=127.0.0.1:3128 NO_PROXY='.com'
 
-# Check if the correct number of arguments is provided
-if [ "$#" -lt 3 ]; then
-  echo "Usage: $0 <Ticker> <Quantity> <Prices>"
-  exit 1
-fi
-
-# Assign input values to variables
-ticker=$1
-quantity=$2
-prices=$3
-
-# Format the JSON output
-output=$(cat <<EOF
-{
-  "orders": [
-    {
-      "prices": "$prices",
-      "orderType": "STP LMT",
-      "side": "BUY",
-      "ticker": "$ticker",
-      "tif": "GTC",
-      "quantity": $(printf "%.0f" "$quantity")
-    }
-  ]
-}
-EOF
-)
-
-# Print the JSON output
-echo "$output"
-return "$output"
-
+  kubectl get deployment -n database;
+  kubectl port-forward deployment/sql-proxy-offer-service -n database  3309:3306 &
 }
 
+dbprod() {
+  # kill -9 $(lsof -t -i tcp:3128);
+  # gcloud config set project fponprd
+  # gcloud container clusters get-credentials sqlproxy-prod-ap --zone=asia-southeast1
+  # gcloud compute ssh bastion --zone asia-southeast1-c --project fponprd --tunnel-through-iap -- -fNL '*:3128:127.0.0.1:3128'
+  # export HTTPS_PROXY=127.0.0.1:3128 NO_PROXY='.com'
 
-up() {
-#!/bin/bash
-
-# Assign input values to variables
-orderID=$1
-price=$2
-size=$3
-
-if [ -z $size ]; then
-  size=0
-fi
-
-  # Format the JSON output
-output=$(cat <<EOF
-{
-    "orderID": $orderID,
-    "quantity": $size,
-    "price": $price
-}
-EOF
-)
-
-# Print the JSON output
-echo "$output"
-
-curl -X PUT -H 'Content-Type: application/json' -d "$output" "http://localhost:8085/contracts" | json_pp
-
-}
-buy() {
-  json_data=$(req "$1" "$2" "$3")
-
-  curl -X POST -H 'Content-Type: application/json' -d "$json_data" "http://localhost:8085/bracketOrders" | json_pp
+  # kubectl get deployment -n database;
+  # kubectl port-forward deployment/sql-proxy-fponprod -n database  3306:3306 &
+  ssh -NT -L '127.0.0.1:3306:10.45.16.21:3306'  shiva_yb_fairprice_com_sg@35.240.158.28
 }
 
-oca() {
-  json_data=$(req "$1" "$2" "$3")
+# stats() {
+#   open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863&range=T7
+# }
 
-  curl -X POST -H 'Content-Type: application/json' -d "$json_data" "http://localhost:8085/ocaOrders" | json_pp
-}
 
-ms() {
-  url="http://localhost:8085/sell"
-  for symbol in "$@"
-  do
-      url="${url}?symbol=${symbol}"
-      echo $url
-      curl -X POST -H 'Content-Type: application/json' -d "{}" "$url" | json_pp
-      delete $symbol
-  done
-}
+
+
+
+
+# deleteAlert() {
+#   curDir=$(pwd)
+#   cd ~/workspaces/stocks
+#   grep -v "\b$$1\b" alerts.txt > temp.txt
+#   mv temp.txt alerts.txt
+# }
+
+
+
+
+
+
+
+
+
+
+
 
 export PATH=$PATH:$(go env GOPATH)/bin
 export ANDROID_SDK_ROOT=$HOME/Android/sdk
@@ -309,32 +268,147 @@ if [ -f '/Users/1041803/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/1
 [[ -s "/Users/1041803/.gvm/scripts/gvm" ]] && source "/Users/1041803/.gvm/scripts/gvm"
 export PATH="$HOME/.jenv/bin:$PATH"
 eval "$(jenv init -)"
-ibkrURL=https://localhost:8080/v1/api/iserver
 alias json=node -p "JSON.stringify( JSON.parse(require('fs').readFileSync(0) ), 0, 1 )"
 
-get() {
-  curl http://localhost:8085/orders\?symbol\="$1" | json_pp
+daily() {
+  close "https://creditbubblebulletin.blogspot.com"
+  close "https://tradingeconomics.com/united-states/news"
+  close "https://www.investors.com/category/research/ibd-stock-of-the-day/"
+  close "https://www.investors.com/category/market-trend/the-big-picture/"
+  # close "https://grantspub.com/resources/commentary.cfm#:~:text=SEARCH"
+  # close "https://www.investors.com/research/earnings-calendar-analyst-estimates-stocks-to-watch"
+  # close "https://www.thechartreport.com"
+
+  today=$(date +"%Y-%m-%d")
+  # econCalendar
+  # grants
+  # earnings
+  report
+  open "https://creditbubblebulletin.blogspot.com#:~:text=$today"
+  # open "https://finance.yahoo.com/news/"
+  # open "https://www.wsj.com/news/latest-headlines?mod=nav_top_section"
+  # open "https://www.ft.com/"
+  open https://tradingeconomics.com/united-states/news
+  open "https://www.investors.com/category/research/ibd-stock-of-the-day/"
+  open "https://www.investors.com/category/market-trend/the-big-picture/"
+}
+
+weekAhead() {
+  curl -s https://tradingeconomics.com/ws/stream.ashx\?start\=0\&size\=20\&c\=united%20states | grep -A1 "Week Ahead"
+}
+
+bulletin() {
+  count=$1
+  if [[ -z $1 ]]; then
+    count=10
+  fi
+  curl -s https://creditbubblebulletin.blogspot.com | grep "^<p><a href" | sed "s/p><a/\n/g" | sed "s/.*\">\(.*\)<.*/\1/g" | head -$count | tail -10 | perl -MHTML::Entities -pe 'decode_entities($_)' 2> /dev/null | grep -v "Wide character" | sed "s/\]\?/]/g" 2> /dev/null
+
+  # cat temp.txt | grep "^\["
+
+  echo "Next?"
+  read next
+  bulletin $(( count + count ))
+}
+
+five() {
+  today=$(date +"%Y-%m-%d") | grep "totalPnL"
+  open "https://mail.google.com/mail/u/0/#search/bloomberg+Morning+Briefing"
+  open "https://mail.google.com/mail/u/0/#search/Yahoo+Morning+Brief"
 }
 
 report() {
   # go run . 1 us | egrep "MAs-X|MA50 < MA150/200|break|High|low|Percent|x 3.|NIFTY|Tight" | sort -k2 -r
-  open https://thechartreport.com/todays-daily-chart-report/
+  today=$(date -v-1d +"%m-%d-%y")
+  open "https://www.thechartreport.com/$today"
 }
 
-watch() {
-  watchlist=$(grep WATCHLIST .watchlist)
-  for symbol in "$@"
+add() {
+  tickers=$(echo $@ | sed "s/,/ /g")
+  cp .env .env_bk
+
+  # remove existing ones
+
+  if [ $? -ge 20 ]; then
+    for symbol in "$@"
+    do
+      rem $symbol
+    done
+  fi
+
+  watchlist=$(grep "^US=" ~/workspaces/stocks/.env)
+  unset watchlistNew
+  for symbol in $(echo ${tickers[@]});
   do
-    watchlist+=" $symbol"
+    echo $watchlist | grep "\b${symbol}\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      echo "\n$symbol added"
+      watchlistNew+=" $symbol"
+    fi
   done
 
-  echo $watchlist > .watchlist
+  # prepend to existing list
+  watchlist=$(echo $watchlist | sed "s/US=//")
+  watchlistNew+=" $watchlist"
+
+  grep -v "^US=" ~/workspaces/stocks/.env > temp.txt
+
+  echo $watchlistNew | grep "^US=" > /dev/null
+  if [ $? -eq 0 ]; then
+    return
+    echo $watchlistNew > ~/workspaces/stocks/.env
+  else
+    watchlistNew=$(echo "US=$watchlistNew" | sed "s/US= /US=/")
+    echo "$watchlistNew" > ~/workspaces/stocks/.env
+  fi
+
+  cat temp.txt >> ~/workspaces/stocks/.env
+  rm temp.txt
+
+  if [[ $# -eq 1 ]]; then
+    # desc $1
+  fi
+}
+addInd() {
+  # tickers=$(echo $@ | sed "s/ /\n/g" | sort | uniq | tr '\n' ' ')
+  cp .env .env_bk
+  watchlist=$(grep "^IND=" ~/workspaces/stocks/.env)
+  for symbol in "$@"
+  do
+    echo $watchlist | grep "\b${symbol}\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      echo "\n$symbol added"
+      watchlist+=" $symbol"
+    fi
+  done
+
+  grep -v "^IND=" ~/workspaces/stocks/.env > temp.txt
+  echo $watchlist > ~/workspaces/stocks/.env
+  cat temp.txt >> ~/workspaces/stocks/.env
+  rm temp.txt
 }
 
-unwatch() {
+
+watch() {
+  watchlist=$(grep WATCHLIST /Users/1041803/workspaces/stocks/.env)
+  for symbol in "$@"
+  do
+    echo $watchlist | grep "\b$symbol\b" >/dev/null
+    if [ ! $? -eq 0 ]; then
+      watchlist+=" $symbol"
+    fi
+  done
+
+  echo $watchlist
+  grep -v WATCHLIST /Users/1041803/workspaces/stocks/.env > temp.txt
+  echo $watchlist >> temp.txt
+  mv temp.txt /Users/1041803/workspaces/stocks/.env
+}
+
+unw() {
   #!/bin/bash
 
-  watchlist_array=$(grep WATCHLIST .watchlist)
+  watchlist_array=$(grep WATCHLIST /Users/1041803/workspaces/stocks/.env )
 
   delete_list_array=($@)
 
@@ -345,22 +419,170 @@ unwatch() {
   WATCHLIST=$(echo "${watchlist_array[@]}")
   # echo "Modified WATCHLIST: $WATCHLIST"
 
-  echo $WATCHLIST > .watchlist
+  echo $WATCHLIST
+  grep -v WATCHLIST /Users/1041803/workspaces/stocks/.env > temp.txt
+  echo $WATCHLIST >> temp.txt
+  mv temp.txt /Users/1041803/workspaces/stocks/.env
+
+}
+
+rem() {
+  #!/bin/bash
+
+  watchlist_array=$(grep "^US=" ~/workspaces/stocks/.env)
+
+  delete_list_array=($@)
+
+  for del_item in "${delete_list_array[@]}"; do
+    watchlist_array=($(echo "${watchlist_array[@]}" | tr ' ' '\n' | grep -v "\b${del_item}\b" | tr '\n' ' '))
+  done
+
+  WATCHLIST=$(echo "${watchlist_array[@]}")
+  # echo "Modified WATCHLIST: $WATCHLIST"
+
+  grep -v "^US=" ~/workspaces/stocks/.env > temp.txt
+  echo $WATCHLIST | grep "US=" > /dev/null
+  if [ $? -eq 0 ]; then
+    echo "$WATCHLIST" > ~/workspaces/stocks/.env
+  else
+    echo "US=$WATCHLIST" > ~/workspaces/stocks/.env
+  fi
+  cat temp.txt >> ~/workspaces/stocks/.env
+  rm temp.txt
+
+}
+
+remInd() {
+  #!/bin/bash
+
+  watchlist_array=$(grep "^IND=" ~/workspaces/stocks/.env)
+
+  delete_list_array=($@)
+
+  for del_item in "${delete_list_array[@]}"; do
+    watchlist_array=($(echo "${watchlist_array[@]}" | tr ' ' '\n' | grep -v "\b${del_item}\b" | tr '\n' ' '))
+  done
+
+  WATCHLIST=$(echo "${watchlist_array[@]}")
+  # echo "Modified WATCHLIST: $WATCHLIST"
+
+  grep -v "^IND=" ~/workspaces/stocks/.env > temp.txt
+  echo $WATCHLIST > ~/workspaces/stocks/.env
+  cat temp.txt >> ~/workspaces/stocks/.env
+  rm temp.txt
 
 }
 
 hold() {
   for symbol in "$@"
   do
-    open https://finance.yahoo.com/quote/$symbol/holders#:~:text=Mutual
+    open https://finance.yahoo.com/quote/$symbol/holders#:~:text=Holders
+    open https://finance.yahoo.com/quote/$symbol/analysis${PageText}=Trends
+  done
+}
+intc() {
+  curl https://query1.finance.yahoo.com/v8/finance/chart/INTC\?interval\=1d\&range\=5d
+}
+nasdaq() {
+  curl -s "https://api.nasdaq.com/api/quote/list-type/nasdaq100" --header 'user-agent: isnsomnia/9.1.0' | jq ".data.data.rows" | grep "symbol" | awk '{print $2}' | sed "s/[\",]//g" | tr "\n" " " | tee /dev/tty | pbcopy
+}
+info() {
+  # echo "Sector|Industry|OneYrTarget|AverageVolume|MarketCap|Yield"
+  # curl -s "https://api.nasdaq.com/api/quote/$1/summary?assetclass=stocks" --header 'user-agent: insomnia/9.1.0' | jq ".data.summaryData" | egrep -A2 "Sector|Industry|OneYrTarget|AverageVolume|MarketCap|Yield" | grep "value"
+  # curl -s "https://api.nasdaq.com/api/quote/$1/summary?assetclass=stocks" --header 'user-agent: insomnia/9.1.0' | jq ".data.summaryData.Industry.value" | pbcopy
+  # earnings $1
+  # atr $1
+  # recommend $1
+
+  # gains $1
+  # name=$(go run ~/workspaces/stocks/. price $1 | tail -1)
+  # scan $name
+
+  open "https://www.theinformation.com/technology?view=recent"
+}
+scan() {
+  companyName=$(jq -r --arg symbol "$1" '.[] | select(.Symbol == $symbol) | .CompanyName' datalist.json)
+
+  open "https://duckduckgo.com/?q=($companyName+OR+$1)+(lawsuit+OR+%22class+action%22+OR+litigation+OR+settlement+OR+investigation+OR+probe+OR+scandal+OR+fraud+OR+SEC+OR+fine)+(site%3Areuters.com+OR+site%3Abloomberg.com+OR+site%3Awsj.com+OR+site%3Acnbc.com+OR+site%3Amarketwatch.com+OR+site%3Aseekingalpha.com+OR+site%3Asec.gov+OR+site%3Aft.com)&df=m&ia=web&atb=v335-1"
+
+  open https://seekingalpha.com/symbol/$1/news#:~:text="$1 NEWS"
+  # open "https://duckduckgo.com/?q=site:sec.gov \"$1\" investigation"
+  # open "https://duckduckgo.com/?q=site:bloomberglaw.com \"$1\" dispute"
+
+
+}
+forecast() {
+  curl -s "https://api.nasdaq.com/api/analyst/$1/earnings-forecast" --header 'user-agent: insomnia/9.1.0' | jq ".data" | egrep '"fiscalEnd"|"Last"|"consensusEPSForecast"'
+
+  echo "\nOver the Last 4 Weeks Number of Revision (Qtrs 2024 -> 2025)\n"
+  curl -s "https://api.nasdaq.com/api/analyst/$1/earnings-forecast" --header 'user-agent: insomnia/9.1.0' | jq ".data" | egrep '"up"|"down"'| grep -v "Over" | egrep -v '"up": 0|"down": 0'
+  surprises $1
+
+  echo "\nRevenue"
+  echo "2024 -> 2023 -> 2022 (Fiscal Year)\n"
+  revenue $1 | grep -A21 "Totals"
+
+  echo "\nMomentum (forecast)"
+  momentum $1
+}
+momentum() {
+  curl -s "https://api.nasdaq.com/api/analyst/$1/estimate-momentum" --header 'user-agent: insomnia/9.1.0'| jq ".data.estimatesChanged"
+
+}
+surprises() {
+ curl -s "https://api.nasdaq.com/api/company/$1/earnings-surprise" --header 'user-agent: insomnia/9.1.0'| jq ".data.earningsSurpriseTable.rows"
+
+}
+values() {
+  echo "Filename"
+  read filename
+  cut -d"," -f1,14,15 /Users/1041803/Downloads/$filename.csv | grep -v Ticker | cut -d"," -f1 | tee /dev/tty | tr "\n" " " | pbcopy
+}
+earnings() {
+  # curl -s "https://api.nasdaq.com/api/analyst/$1/earnings-date" --header 'user-agent: insomnia/9.1.0' | jq ".data.announcement"
+  #
+  output_date=$(ddte)
+  open https://www.investors.com/research/earnings-calendar-analyst-estimates-stocks-to-watch#:~:text=$output_date
+  return
+
+  if [[ ! -z $1 ]]; then
+    cut -d"," -f1,14,15 /Users/1041803/Downloads/earnings.csv | grep $1
+    return
+  fi
+  today=$(date +"%Y-%m-%d")
+  cut -d"," -f1,14,15 /Users/1041803/Downloads/earnings.csv | grep --color=always $today | tee /dev/tty | cut -d"," -f1 | tr "\n" "," | pbcopy
+
+  echo "\nProceed for next day?"
+  read nad
+  tomorrow=$(date -v+1d +"%Y-%m-%d")
+  cut -d"," -f1,14,15 /Users/1041803/Downloads/earnings.csv | grep --color=always $tomorrow | tee /dev/tty | cut -d"," -f1 | tr "\n" "," | pbcopy
+}
+revenue() {
+  curl -s "https://api.nasdaq.com/api/company/$1/revenue?limit=1" --header 'user-agent: insomnia/9.1.0' | jq ".data.revenueTable"
+}
+
+company() {
+  for symbol in "$@"
+  do
+    open https://finance.yahoo.com/quote/$symbol/press-releases#:~:text="Press Releases"
   done
 }
 
-prof() {
+profile() {
   for symbol in "$@"
   do
-    open https://finance.yahoo.com/quote/$symbol/profile
+    open https://finance.yahoo.com/quote/$symbol/profile#:~:text="Description"
+    # open "https://seekingalpha.com/symbol/$symbol#:~:text=B%2B-,$symbol%20Company%20Profile"
   done
+}
+
+stats() {
+  exchange=$(curl -s -H "User-Agent: insomnia/9.1.0" "https://query1.finance.yahoo.com/v8/finance/chart/$1?interval=1d&range=1m" | jq ".chart.result[].meta.fullExchangeName" | sed "s/\"//g")
+  if [[ $exchange == Nasdaq* ]]; then
+    exchange="NASDAQ"
+  fi
+  open "https://www.tradingview.com/symbols/$exchange-$1/financials-statistics-and-ratios/?statistics-period=FY#:~:text=Valuation"
+  open "https://www.tradingview.com/symbols/$exchange-$1/financials-earnings/?earnings-period=FY&revenues-period=FY#:~:text=Revenue"
 }
 
 etf() {
@@ -372,29 +594,172 @@ etf() {
 
 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 
-pc() {
-  perc=1
-  num=$1
 
-  if [ ! -z $2 ]; then
-    perc=$2
+
+# position sizing
+
+# ps() {
+#   if [[ $# -lt 1 ]]; then
+#     echo "need at least risk/trade or size"
+#     exit1
+#   fi
+#   psWork $@
+# }
+psWork() {
+  echo "Entry?"
+  read numerator
+
+  echo "Stop level"
+  read stop
+  if [[ -z $stop ]]; then
+    echo "Stop Percetange"
+    read stopPerc
+    stop=$(bc -l <<< "scale=2; $numerator*(1-$stopPerc/100)")
   fi
-  perc=$(bc -l <<< "scale=2; $perc/100")
-  perc=$(($perc + 1))
-  result=$(($num * $perc))
-  result=$(printf "%.02f" "$result")
-  echo $result
-  echo $result | pbcopy
+  if [[ -z $stop ]]; then
+    stop=$(echo "scale=2; (0.96 * $numerator)" | bc )
+    echo Stop: $stop
+  fi
+
+  echo "Target"
+  read target
+
+  multiplier=1
+  if [[ ! -z $2 ]]; then
+    multiplier=$2
+  fi
+
+  equity=$(( multiplier * $1 ))
+  rr=$3
+  if [[ -z $rr ]]; then
+    rr=2
+  fi
+
+  # numerator=$(echo $1 | awk '{split($1, arr, "/"); print arr[1]}')
+  denominator=$stop
+  target=$target
+  target2=$target
+  result=$(echo "scale=2; $equity / ($numerator - $denominator)" | bc)
+  total=$(echo "scale=2; $numerator * $result" | bc )
+  targetPerc=$(echo "scale=2; ($target-$numerator)/$numerator" | bc)
+
+  if [[  -z $target ]]; then
+    echo "R multiple $rr"
+    target=$(echo "scale=2; ($numerator) + (($numerator - $denominator) * 3)" | bc )
+    target2=$(echo "scale=2; ($numerator) + (($numerator - $denominator) * $rr)" | bc )
+  fi
+
+  if [[ $targetPerc -gt 0.2 ]]; then
+    echo "\n${Red}target is > 20%$NC"
+    target=$(echo "scale=2; ($numerator)*1.2" | bc )
+  fi
+
+
+  echo "${Green}$result${NC} $numerator/$denominator/$target/$target2 ${Red}$total${NC}"
+  echo "save $result $numerator/$denominator/$target/$target2" | sed "s/\n//g" | pbcopy
+
+  echo "\nWant to revise?"
+  read yesno
+  case $yesno in
+      [Yy]* )
+          echo "Enter size"
+          read multiplier
+          equity=$(( multiplier * $1 ))
+
+          result=$(echo "scale=2; $equity / ($numerator - $denominator)" | bc)
+          total=$(echo "scale=2; $numerator * $result" | bc )
+          echo "${Green}$result${NC} $numerator/$denominator/$target/$target2 ${Red}$total${NC}"
+          echo "save $result $numerator/$denominator/$target2/$target" | sed "s/\n//g" | pbcopy
+      ;;
+      [Nn]* )
+          psWork $1 $2
+      ;;
+  esac
+  echo "=============\n\n"
+  psWork $1 $2
+}
+sp() {
+  if [[ $# -lt 2 ]]; then
+    echo "need both price & equity"
+    exit1
+  fi
+
+  spWork $@
 }
 
-action() {
-  if [ ! -z $1 ]; then
-    curl http://localhost:8085/sheets/actionItems | json_pp | grep "\"$1\"" -A16
-    return
+spWork() {
+  multiplier=1
+  if [[ ! -z $2 ]]; then
+    multiplier=$2
   fi
 
-  curl http://localhost:8085/sheets/actionItems | json_pp
+  equity=$(( multiplier * $1 ))
+
+  rr=$3
+  if [[ -z $rr ]]; then
+    rr=2
+  fi
+
+  echo "Entry"
+  read numerator
+
+  echo "Stop level"
+  read stop
+  if [[ -z $stop ]]; then
+    stop=$(echo "scale=2; (1.04 * $numerator)" | bc )
+    echo Stop: $stop
+  fi
+
+  echo "Target"
+  read target
+
+  denominator=$stop
+  result=$(echo "scale=2; $equity / ($denominator - $numerator)" | bc)
+  total=$(echo "scale=2; $denominator * $result" | bc )
+  target2=$target
+
+  if [[  -z $target ]]; then
+    echo "R multiple $rr\n"
+    target=$(echo "scale=2; $numerator - (($denominator - $numerator) * 3)" | bc )
+    target2=$(echo "scale=2; $numerator - (($denominator - $numerator) * $rr)" | bc )
+  fi
+
+  targetPerc=$(echo "scale=2; ($numerator-$target)/$numerator" | bc)
+  if [[ $targetPerc -gt 0.2 ]]; then
+    echo "\n${Red}target is > 20%$NC"
+    target=$(echo "scale=2; ($numerator)*0.8" | bc )
+  fi
+
+
+  echo "${Green}$result${NC} $numerator/$denominator/$target/$target2 -${Red}$total${NC}"
+  echo "evas $result $numerator/$denominator/$target/$target2" | pbcopy
+
+  echo "\nWant to revise?"
+  read yesno
+  case $yesno in
+      [Yy]* )
+          echo "Enter size"
+          read multiplier
+          equity=$(( multiplier * $1 ))
+
+          result=$(echo "scale=2; $equity / ($denominator - $numerator)" | bc)
+          total=$(echo "scale=2; $denominator * $result" | bc )
+          echo "${Green}$result${NC} $numerator/$denominator/$target/$target2 -${Red}$total${NC}"
+          echo "evas $result $numerator/$denominator/$target/$target2" | pbcopy
+      ;;
+      [Nn]* )
+        spWork $1 $2
+      ;;
+  esac
+  spWork $1 $2
 }
+
+
+
+
+
+
+
 
 200() {
   open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863
@@ -405,9 +770,1675 @@ size() {
 }
 
 sectors() {
-  open https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit#gid=570450863&range=AC1
+  echo "XLK,XLE,XLI,XLP,XLY,XLV,XLB,XLF,XLU,XLC,XLRE" | pbcopy
+  echo $(pbpaste) | tr "," "\n" | grep -v "^$" | while read ticker; do
+  cat datalist.json | jq -r ".[] | select(.Symbol == \"$ticker\")"
+  done | jq -s '.' > rect.json
+
+  cat rect.json | jq -r '[
+  def rank: .PricePctOff52WHigh | if . == "" or . == null then -100 else tonumber end;
+  sort_by(rank) | reverse | .[] | {Symbol, RSRating, PricePctOff52WHigh}]' | tee >(jq -C '.' > /dev/tty) | jq -r '. | map(.Symbol) | join(",")' | pbcopy
+
+  [ -f rect.json ] && rm -f rect.json
 }
 
 opt() {
   open https://finance.yahoo.com/quote/$1/options
+}
+
+
+
+
+
+
+
+token() {
+  curl --location 'https://auth.nedigital.sg/oauth/token' \
+--header 'content-type: application/json' \
+--header 'Cookie: did=s%3Av0%3A495e8d90-db64-11ee-9773-6960dbdb675a.Z%2Bc8pq%2BnYNBtvl259tQ%2BZ4MtCgu%2FLfGk3roHC4vwHks; did_compat=s%3Av0%3A495e8d90-db64-11ee-9773-6960dbdb675a.Z%2Bc8pq%2BnYNBtvl259tQ%2BZ4MtCgu%2FLfGk3roHC4vwHks' \
+--data '{
+    "client_id": "sllhhnzNhB7nQmBaAtUKi3NNbNz8UtER",
+    "client_secret": "k1RW7CaCH40J5FmfEK5ZihVr22q74vVLXsYAVQprOaW2ld-BvX2zgAvdsMo9g_fJ",
+    "audience": "https://apertum.nedigital.auth0.com/api/v2/",
+    "grant_type": "client_credentials"
+}' | jq "."
+}
+
+uattoken() {
+  curl --location 'https://preprod-auth.nedigital.sg/oauth/token' \
+  --header 'Content-Type: application/json' \
+  --cookie 'did=s%253Av0%253Ad2b4165b-cfea-4e2c-992d-6ad09dad924d.Ib0XzLDxGrqD5NoIQT4pVxKaY762vCzpFJx8IZxsakY; did_compat=s%253Av0%253Ad2b4165b-cfea-4e2c-992d-6ad09dad924d.Ib0XzLDxGrqD5NoIQT4pVxKaY762vCzpFJx8IZxsakY' \
+  --data '{
+    "client_id": "nozJOEtBRaYpkvjC6C3EwgMJefefFXXH",
+    "client_secret": "43hBbsvr-o1MgsdVlPi2-a9kOrLg43H9_r31g5mKTWwy1usrL8J1lhalL7z45T0z",
+    "audience": "https://api.marketplace.nedigital.sg/",
+    "grant_type": "client_credentials"
+}' | jq ".access_token" | sed "s/\"//g" | pbcopy
+}
+
+run2() {
+  bin/run2.sh root/conf.yaml
+}
+
+grants() {
+  open https://grantspub.com/resources/commentary.cfm#:~:text=SEARCH
+}
+
+10k() {
+  open "https://www.sec.gov/cgi-bin/browse-edgar?company=$1&match=starts-with&filenum=&State=&Country=&SIC=&myowner=exclude&action=getcompany&type=10-k${PageText}=10-k"
+}
+
+econCalendar() {
+  today=$(date +"%b %d %Y")
+  open https://tradingeconomics.com/calendar#:~:text=Monday
+  # open https://tradingeconomics.com/united-states/news
+}
+
+news() {
+  today=$(date -v-1d +"%b %d")
+  open https://creditbubblebulletin.blogspot.com#:~:text=$today
+  open https://tradingeconomics.com/india/news
+  open https://tradingeconomics.com/united-states/news
+}
+
+timeline() {
+  open https://twitter.com/i/timeline
+}
+
+
+yahoo() {
+  open https://finance.yahoo.com/quote/$1
+}
+
+#find turns, clusters, & stops in stocks
+turn() {
+  go run ~/workspaces/stocks/. turning $@
+}
+top() {
+  go run ~/workspaces/stocks/. top $@
+}
+cluster() {
+  go run ~/workspaces/stocks/. cluster $@
+}
+getUpDownVolume() {
+  tickers=$(echo $@ | sed "s/,/ /g")
+  go run ~/workspaces/stocks/. updownvolume $(echo $tickers[@]) | tee /dev/tty | cut -d":" -f1 | tr "\n" "," | pbcopy
+}
+gains() {
+  echo "Start date? (dd/mm/yyyy)"
+  read forDate
+  go run ~/workspaces/stocks/. gains $1 $forDate | tee /dev/tty | sed "s/.* Avg: \(.*\)/\1/" | sort -rn | tee /dev/tty | tail -1 | pbcopy
+}
+dips() {
+  echo "Start date? (dd/mm/yyyy)"
+  read forDate
+  go run ~/workspaces/stocks/. dips $1 $forDate | tee /dev/tty | sed "s/.* Avg: \(.*\)/\1/" | sort -rn | tee /dev/tty | tail -1 | pbcopy
+}
+ath() {
+  go run ~/workspaces/stocks/. ath $@
+}
+price() {
+  tickers=$(echo $@ | sed "s/,/ /g")
+  go run ~/workspaces/stocks/. price $(echo $tickers[@])
+}
+priceat() {
+  go run ~/workspaces/stocks/. priceat $@
+}
+trend() {
+  for symbol in $@; do
+    go run ~/workspaces/stocks/. isTrending $symbol
+  done
+}
+ipo() {
+  go run ~/workspaces/stocks/. 1 ipo | tee /dev/tty | pbcopy
+}
+recommend() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+
+  if [[ ! -z $1 ]]; then
+    grep -A6 "\b$1\b" recommendations*.json
+    return
+  fi
+  today=$(date +"%b_%d_%Y")
+  filename=$(echo recommendations_$today.json)
+  go run ~/workspaces/stocks/. 1 recommend | jq "." > $filename
+  # cat $filename | jq "."
+  cat $filename | jq ".strong" | sed "s/\"//g" | pbcopy
+  cat $filename | jq ".strong"
+  cat $filename | jq ".buys"
+  cat $filename | jq ".weak"
+
+  cd $curDir
+}
+rect() {
+  rectangle $1 | grep $2
+}
+rectangle() {
+  # if [[ ! -z $2 ]]; then
+  #   go run ~/workspaces/stocks/. rectangle $1 | grep $2
+  #   return
+  # fi
+  go run ~/workspaces/stocks/. rectangle $@ | less -X
+}
+cup() {
+  go run ~/workspaces/stocks/. cupbase $@ | less -X
+}
+flags() {
+  go run ~/workspaces/stocks/. flags $@ | less -X
+}
+tightCloses() {
+  # if [[ ! -z $2 ]]; then
+  #   go run ~/workspaces/stocks/. rectangle $1 | grep $2
+  #   return
+  # fi
+  go run ~/workspaces/stocks/. tightCloses $@
+
+  # echo "\n\n"
+  # go run ~/workspaces/stocks/. dryingVolume $@
+}
+oops() {
+  go run ~/workspaces/stocks/. oopsReversal $@
+}
+dryVolume() {
+  go run ~/workspaces/stocks/. dryingVolume $@
+}
+downRectangle() {
+  go run ~/workspaces/stocks/. downRectangle $@
+}
+downr() {
+  downRectangle $1 | grep $2
+}
+similar() {
+  curl -s "https://query1.finance.yahoo.com/v6/finance/recommendationsbysymbol/$1?fields=&lang=en-US&region=US" --header 'user-agent: insomnia/9.1.0' | jq "."
+  # go run ~/workspaces/stocks/. 1 similar
+}
+trending() {
+  go run ~/workspaces/stocks/. 1 trending
+}
+findSimilar() {
+  filename=$(ls -lrt watchlist_similar_us*.txt | tail -1 | sed "s/.* //g")
+  cat $filename | jq "." | grep -i -B2 $1 | tee /dev/tty | grep "ticker" | sed "s/.*\"\(.*\)\"/\1/g" | tr "\n" " " | uniq | sed "s/, /,/g" | pbcopy
+}
+localLow() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  go run ~/workspaces/stocks/. localLow $@
+  cd $curDir
+}
+range() {
+  go run ~/workspaces/stocks/. range $@
+}
+scratch() {
+  # curDir=$(pwd)
+  cd "/Users/1041803/Library/Application Support/JetBrains/GoLand2025.1/scratches"
+
+}
+etfs() {
+  rm allETFs.txt 2> /dev/null
+  list=""
+  for symbol in "$@"
+  do
+    go run ~/workspaces/stocks/. etfs $symbol | tee /dev/tty > etfs.txt
+    echo "\n$symbol" >> allETFs.txt
+    cat etfs.txt >> allETFs.txt
+    cat etfs.txt | sed "s/Tickers \[\(.*\)\].*/\1/" | pbcopy
+    ticker=$(cat etfs.txt | sed "s/Tickers \[\(.*\)\].*/\1/")
+    list=$(echo $list $ticker)
+    echo "\n"
+  done
+  rem XABM24 XAKM24 AIXM24 XAEM24 XATM24 XATU24
+  # echo $list | tee /dev/tty | pbcopy
+  doDiff $(echo $list[@])
+  rm etfs.txt
+}
+rut() {
+  curDir=$(pwd)
+  cd ~/Downloads
+  # rm IWM_holdings.csv 2> /dev/null
+  if [[ ! -s IWM_holdings.csv ]]; then
+    open https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/1467271812596.ajax\?fileType\=csv\&fileName\=IWM_holdings\&dataType\=fund
+  fi
+
+  count=100
+  if [[ ! -z $1 ]]; then
+    count=$1
+  fi
+
+  if [[ ! -z $2 ]]; then
+    grep "\b$2\b" ~/Downloads/IWM_holdings.csv | tr "\"," "\" " | sed "s/\" \"/\":\"/g" | cut -d":" -f1,6 | tr "\"" " " | tr "\n" ","
+    cd $curDir
+    return
+  fi
+
+  cat ~/Downloads/IWM_holdings.csv | grep -A$count "Ticker" | tr "\"," "\" " | sed "s/\" \"/\":\"/g" | cut -d":" -f1,6,11
+  cat ~/Downloads/IWM_holdings.csv | grep -A$count "Ticker" | tr "\"," "\" " | sed "s/\" \"/\":\"/g" | cut -d":" -f1 | tail -$count | tr "\"" " " | tr "\n" " " | pbcopy
+  cd $curDir
+}
+doDiff() {
+  watchlist=$(grep "^US=" ~/workspaces/stocks/.env)
+  list=""
+  tickers=$(uncomma $@ | sed "s/\"//g")
+  for symbol in $(echo $tickers[@])
+  do
+    echo $watchlist | grep "\b${symbol}\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      # echo "\n${symbol} added"
+      list=$(echo $list $symbol)
+    fi
+  done
+
+  echo $list | sed "s/ /,/g" | tee /dev/tty | pbcopy
+  # screen $(echo $list)
+}
+doDiffInd() {
+  watchlist=$(grep "^IND=" ~/workspaces/stocks/.env)
+  list=""
+  tickers=$(uncomma $@ | sed "s/\"//g")
+  for symbol in $(echo $tickers[@])
+  do
+    echo $watchlist | grep "\b${symbol}\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      # echo "\n${symbol} added"
+      list=$(echo $list $symbol)
+    fi
+  done
+
+  echo $list | sed "s/ /,/g" | tee /dev/tty | pbcopy
+  # screen $(echo $list)
+}
+
+screen() {
+  go run ~/workspaces/stocks/. screen $@ | tee /dev/tty | sed "s/\[\(.*\)\]/\1/g" | pbcopy
+}
+
+wtf() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  if [[ -s allETFs.txt ]]; then
+    for symbol in $@
+    do
+      grep -B1 "\b$symbol\b" allETFs.txt
+      if [[ ! $? -eq 0 ]]; then
+        echo "\n${Red}$symbol NOT FOUND${NC}"
+      fi
+    done
+
+    cd $curDir
+    return
+  fi
+
+  # for symbol in xlv xlu xlp xly xlf xlk xlc xli xlb xle xlre xop xme spy
+  # do
+  #   go run ~/workspaces/stocks/. etfs $symbol > etfs.txt
+  #   grep "\b$1\b" etfs.txt > /dev/null
+  #   if [[ ! $? -eq 0 ]]; then
+  #     echo "Found in $symbol"
+  #     return;
+  #   fi
+  # done
+  # rm etfs.txt
+
+  etfs xlv xlu xlp xly xlf xlk xlc xli xlb xle xlre xop xme spy
+  cd $curDir
+  wtf $@
+}
+stocks() {
+  region=$1
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  go run . 1 $region | egrep "Compressed|High|Clusters|Percent|Turning|error" | sort -k2 -r | grep --color=always "." | tee /dev/tty| grep "error symbols" | cut -d":" -f2 | pbcopy
+}
+getStocks() {
+  echo "Enter country (us/ind/jpy)"
+  read region
+  if [[ -z "$region" ]]; then
+    region="us"
+  fi
+  tickers=$(echo $@ | tr "," " ")
+  go run . 1 stocks $(echo ${tickers[@]})
+  filename=$(ls -lrt watchlist/watchlist_*_stocks*.txt | tail -1 | sed "s/.* //g")
+  echo filename $filename
+  currentFilename=$(ls -lrt watchlist/watchlist_*_${region}*.txt | tail -1 | head -1 | sed "s/.* //g")
+  echo current $currentFilename
+  echo "Proceed?"
+  read ans
+  echo "\n" >> $currentFilename
+  cat $filename >> $currentFilename
+  rm $filename
+
+}
+quotes() {
+  echo $@ | sed 's/\([^ ]*\)/"\1"/g' | pbcopy
+}
+mcp() {
+    gain=$1
+    if [[ -z $1 ]]; then
+      echo "Gain?"
+      read gain
+    fi
+
+    mcp=$2
+    if [[ -z $2 ]]; then
+      echo "Gain?"
+      echo "MCP?"
+      read mcp
+    fi
+
+    if [[ ! -z $3 ]]; then
+      gain=$(bc -l <<< "scale=4; $gain/100")
+      finalGain=$(bc -l <<< "scale=4; $3/100")
+      correction=$(bc -l <<< "scale=4; 1-((1+$finalGain)/(1+$gain))")
+
+      echo "Gain:\t\t $1%"
+      echo "FinalGain:\t $3%"
+
+      echo "Correction:\t ${RED}$(bc -l <<< "scale=2; $correction*100")%${NC}"
+      return
+    fi
+
+    echo "Correction/Netgain: "
+    go run . mcp $gain $mcp
+
+}
+getETF() {
+  ticker=$(echo $1 | tr 'A-Z' 'a-z')
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  if [[ -s allETFs.txt ]]; then
+    for symbol in $@
+    do
+      grep -A1 "\b$ticker\b" allETFs.txt > /dev/null
+      if [[ ! $? -eq 0 ]]; then
+        echo "\n${Red}$symbol NOT FOUND${NC}"
+      fi
+      grep -A1 "\b$ticker\b" allETFs.txt | tail -1 | sed "s/Tickers \[\(.*\)\].*/\1/" | sed -e "s/XABM24 //g" | sed "s/XAKM24 //g" | sed "s/AIXM24 //g" | sed "s/XAEM24 //g" | sed "s/XATM24//g"
+      tickers=$(grep -A1 "\b$ticker\b" allETFs.txt | tail -1 | sed "s/Tickers \[\(.*\)\].*/\1/" | sed -e "s/ XABM24//g" | sed "s/ XAKM24//g" | sed "s/ AIXM24//g" | sed "s/ XAEM24//g" | sed "s/ XATM24//g")
+      go run . 1 stocks $(echo $tickers | sed "s/\"//g" )
+    done
+
+    cd $curDir
+    return
+  else
+    etfs xlv xlu xlp xly xlf xlk xlc xli xlb xle xlre xop xme spy
+    cd $curDir
+    getETF $1
+  fi
+}
+
+watchlist() {
+  grep WATCHLIST ~/workspaces/stocks/.env | tee /dev/tty | sed -e "s/ /,/g" -e "s/.*XXX,//"| pbcopy
+}
+
+
+sstrong() {
+  rm myList.txt 2>/dev/null
+  today=$(date +"%b_%d_%Y")
+  wget https://eseykota.com/TT/PHP_TT/TT_charts/stocks/myList.txt
+  mv myList.txt myList_$today.txt
+  echo "STRONG"
+  sed -n "/STRONG/,/WEAK/p" myList_$today.txt | sed "s/ ,.*//g" | egrep -v -e "STRONG|WEAK" | tr "\n" " " | tr -s " " | sed "s/ /,/g"  | tee /dev/tty | awk '$1=$1' | pbcopy
+
+  echo "\nWEAK"
+  grep WEAK -A100 myList_$today.txt | sed "s/ ,.*//g" | tr "\n" " " | tr -s " " | sed "s/ /,/g" | tee /dev/tty
+
+}
+
+toppers() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  region=$1
+  curDate=$2
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  if [[ -z $2 ]]; then
+   curDate=$(date +"%Y-%m-%d")
+  fi
+  (sed "s/.*Toppers,\(.*\),Toppers End.*/\1/" watchlist_1d_${region}_${curDate}.txt && echo "," && sed "s/.*Toppers,\(.*\),Toppers End.*/\1/" watchlist_1d_active_${curDate}.txt) | tee /dev/tty | pbcopy
+  # sed "s/.*Toppers,\(.*\),Toppers End.*/\1/" watchlist_1d_active_${curDate}.txt
+  cd $curDir
+}
+highvol() {
+  region=$1
+  curDate=$2
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  if [[ -z $2 ]]; then
+   curDate=$(date +"%Y-%m-%d")
+  fi
+  grep -i "High Volume" watchlist_1d_${region}_${curDate}.txt > /dev/null
+  if [ $? -eq 0 ]; then
+    sed "s/.*High Volume,\(.*\),High Volume End.*/\1/" watchlist_1d_${region}_${curDate}.txt | tee /dev/tty | pbcopy
+    return
+  fi
+}
+findRectangles () {
+  go run ~/workspaces/stocks/. rectangles $@ > temp.txt
+  cat temp.txt
+
+  cut -d" " -f1 temp.txt | grep -v "cannot" | tr "\n" "," | pbcopy
+  rm temp.txt
+}
+historicRectangles() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  go run ~/workspaces/stocks/. historicRectangles $@ | grep "plotData" | jq "." > historicRectangles_$1.json
+  cat historicRectangles_$1.json | tee /dev/tty | jq ".plotData" | pbcopy
+
+  cd $curDir
+}
+getHistorical() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+  cat historicRectangles_us.json | jq "." | grep -A8 "${1}-.-${2}\":"  | grep list | awk '{print $2}' | sed "s/\"\(.*\)\"/\1/" | tee /dev/tty |  pbcopy
+
+  cd $curDir
+}
+rectangles() {
+  region=$1
+  curDate=$2
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  if [[ -z $2 ]]; then
+   curDate=$(date +"%Y-%m-%d")
+  fi
+
+  sed "s/.*Rectangle,\(.*\),Rectangle End.*/\1/" watchlist_1d_${region}_${curDate}.txt | tee /dev/tty | pbcopy
+}
+wrectangles() {
+  region=$1
+  curDate=$2
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  if [[ -z $2 ]]; then
+   curDate=$(date +"%Y-%m-%d")
+  fi
+
+  grep Rectangle watchlist_1wk_${region}_${curDate}.txt > /dev/null
+  if [[ $? -eq 0 ]]; then
+    sed "s/.*Rectangle,\(.*\),Rectangle End.*/\1/" watchlist_1wk_${region}_${curDate}.txt | tee /dev/tty | pbcopy
+  fi
+}
+rectangles3() {
+  region=$1
+  curDate=$2
+  if [[ -z $1 ]]; then
+   region="us"
+  fi
+  if [[ -z $2 ]]; then
+   curDate=$(date +"%Y-%m-%d")
+  fi
+
+  sed "s/.*Rectangle 3,\(.*\),Rectangle 3 End.*/\1/" watchlist_1d_${region}_${curDate}.txt | tee /dev/tty | pbcopy
+}
+newHighsDownload() {
+  rm ~/Downloads/NEW\ HIGH.xls
+  open "https://research.investors.com/stock-lists/new-highs/export.aspx?page=new-highs"
+
+  echo "Proceed?"
+  read proceed
+  go run ~/workspaces/stocks/. newhighs . | jq "." | tee /dev/tty > newHighsNew.txt
+
+  list1=$(cat newHighs.txt | jq ".list")
+  list2=$(cat newHighsNew.txt | jq ".list")
+
+  finalList=""
+
+  for item in $(echo ${list2[@]}); do
+    echo $list1 | tr " " "\n"| grep "\b$item\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      finalList=$(echo $finalList,$item)
+    fi
+  done
+
+  echo $finalList | tee /dev/tty | sed "s/\"//g" | pbcopy
+
+  mv newHighsNew.txt newHighs.txt
+}
+plot() {
+  curDir=$(pwd)
+  cd ~/workspaces/plots
+  python3 do.py $1
+
+  cd $curDir
+}
+
+src() {
+  source ~/.zshrc
+}
+
+source ~/mirakl.sh
+source ~/fairprice.sh
+source ~/workspaces/stocks/diffRect.sh
+source ~/workspaces/stocks/ibd.sh
+source ~/workspaces/stocks/amend.sh
+
+score() {
+  symbol=$1
+  if [[ -z $1 ]]; then
+    echo "Stock?"
+    read symbol
+  fi
+
+  kup $symbol
+
+ ~/workspaces/stocks/eval_stock.sh
+}
+
+comma() {
+  local input result
+  if [ "$#" -gt 0 ]; then
+    input="$*"          # arguments: comma ALTS BK CSGS
+  else
+    input="$(cat)"      # piped: awk ... | comma
+  fi
+  result=$(printf '%s' "$input" | tr '\n' ' ' | tr -s ' ' | sed 's/^ *//; s/ *$//; s/ /,/g')
+  printf '%s\n' "$result"      # show it
+  printf '%s' "$result" | pbcopy   # copy it (no trailing newline)
+}
+uncomma() {
+  tickers=$(echo \"$@\" | tr "," " " | tr -s " ")
+
+  echo $tickers
+  echo $tickers | sed "s/\"//g" | pbcopy
+}
+newline() {
+  tickers=$(echo \"$@\" | tr "," "\n" | tr -s " ")
+
+  echo $tickers
+  echo $tickers | sed "s/\"//g" | pbcopy
+}
+
+
+atr() {
+  for symbol in "$@"
+  do
+    go run ~/workspaces/stocks/. atr $symbol
+  done
+}
+vol() {
+  symbol=$1
+  exchange=$2
+  # for symbol in "$@"
+  # do
+    # echo "Stop Loss?"
+    # read stopLoss
+    # echo "For date?"
+    # read forDate
+    go run ~/workspaces/stocks/. volstop $symbol $stopLoss $exchange $forDate
+  # done
+}
+stock() {
+  # open $(go run ~/workspaces/stocks/. summary $1)
+  # Format the JSON output
+  for symbol in "$@"
+  do
+  output=$(cat <<EOF
+
+  "q": "$symbol",
+  "limit": 1
+}
+EOF
+)
+
+url=$(curl -s 'https://research.investors.com/services/AutoSuggest.asmx/GetQuoteResults' \
+  -H 'accept: application/json, text/javascript, */*; q=0.01' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -H 'origin: https://research.investors.com' \
+  -H 'priority: u=1, i' \
+  -H 'sec-ch-ua: "Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+  -H 'x-requested-with: XMLHttpRequest' \
+  --data-raw "$output" | jq "." | tee /dev/tty | jq ".d[0].Url" | sed "s/\"//g")
+
+  open $url
+  echo "$url#:~:text=3%20Year%20EPS%20Growth%20Rate" | pbcopy
+done
+}
+
+lowest() {
+  go run ~/workspaces/stocks/. lowest $@
+}
+highest() {
+  go run ~/workspaces/stocks/. highest $@
+}
+
+
+
+allHighs() {
+  ls watchlist_1d_us*txt | while read file
+  do
+    dte=$(echo $file | cut -d"_" -f4 | sed "s/\.txt//g")
+    grep "New Highs" $file > /dev/null
+    if [ $? -eq 0 ]; then
+      newhighs us $dte
+    fi
+  done
+}
+
+techcharts() {
+  currentYear=$(date +'%Y')
+  currentMonth=$(date +"%m")
+
+  today=$(date +"%d")
+  currentDate=$(date +"%B-%d-%Y" | tr '[:upper:]' '[:lower:]')
+
+  open "https://blog.techcharts.net/index.php/$currentYear/$currentMonth/$today/global-equity-markets-$currentDate/"
+
+  echo "Previous day?"
+  read ans
+
+  currentYear=$(date -v-1d +'%Y')
+  currentMonth=$(date +"%m")
+
+  today=$(date -v-1d +"%d")
+  currentDate=$(date -v-1d +"%B-%d-%Y" | tr '[:upper:]' '[:lower:]')
+
+  open "https://blog.techcharts.net/index.php/$currentYear/$currentMonth/$today/global-equity-markets-$currentDate/"
+}
+aksel() {
+  curDir=$(pwd)
+  cd ~/Downloads/Readings/Aksel\ Kibar
+
+  echo "Enter month: "; read month
+  echo "Enter day: "; read  day
+
+  ./wget.sh $month $day
+
+  # for str in "$@"; do
+  #   searchStr=$(echo $str | tr '[:lower:]' '[:upper:]')
+
+  #   find ./* -name "*$searchStr*" -print0 | xargs -0 ls -lt | tr -s " " | cut -d" " -f6-
+  # done
+
+  open ~/Downloads/Readings/Aksel\ Kibar
+
+  cd $curDir
+}
+ibd2() {
+  if [[ ! -z $1 ]]; then
+    tickers=$(uncomma $@ | sed "s/\"//g")
+    for str in $(echo $tickers[@]); do
+      grep -A2 $str ibd50.txt
+    done
+    return
+  fi
+  rm ~/Downloads/IBD\ 50.xls
+  open "https://research.investors.com/stock-lists/ibd-50/export.aspx?page=ibd50"
+  echo "Proceed?"
+  read proceed
+  go run ~/workspaces/stocks/. ibd50 . | jq "." | tee /dev/tty > ibd50New.txt
+
+  list1=$(cat ibd50.txt | jq ".list")
+  list2=$(cat ibd50New.txt | jq ".list")
+
+  # echo list1 is $list1
+  # echo list2 is $list2
+
+  finalList=""
+
+  for item in $(echo ${list2[@]}); do
+    echo $list1 | tr " " "\n"| grep "\b$item\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      finalList=$(echo $finalList,$item)
+    fi
+  done
+
+  echo $finalList
+  echo $list1 | tr " " "," | pbcopy
+
+  mv ibd50New.txt ibd50.txt
+
+}
+rshighDownload() {
+  if [[ ! -z $1 ]]; then
+    tickers=$(uncomma $@ | sed "s/\"//g")
+    for str in $(echo $tickers[@]); do
+      grep -A2 $str rsHighs.txt
+    done
+    return
+  fi
+  rm ~/Downloads/RELATIVE\ STRENGTH\ AT\ NEW\ HIGH.xls
+  open "https://research.investors.com/stock-lists/relative-strength-at-new-high/export.aspx?page=relative-strength-high"
+
+  echo "Proceed?"
+  read proceed
+  go run ~/workspaces/stocks/. rshigh . | jq "." | tee /dev/tty > rsHighsNew.txt
+
+  list1=$(cat rsHighs.txt | jq ".list")
+  list2=$(cat rsHighsNew.txt | jq ".list")
+
+  finalList=""
+
+  for item in $(echo ${list2[@]}); do
+    echo $list1 | tr " " "\n"| grep "\b$item\b" > /dev/null
+    if [ ! $? -eq 0 ]; then
+      finalList=$(echo $finalList,$item)
+    fi
+  done
+
+  echo $finalList | tee /dev/tty | sed "s/\"//g" | pbcopy
+
+  mv rsHighsNew.txt rsHighs.txt
+
+}
+
+descLoop() {
+  echo "Enter ticker" && read ticker
+  desc $ticker
+
+  descLoop
+}
+
+tickerRank() {
+  grp=$(cat datalist.json |jq -r "
+    def rank: .IndustryGroupRank | if . == \"\" or . == null then 99999 else tonumber end;
+  .[] | select(.Symbol == \"${symbol}\") | rank | floor")
+
+    cat datalist.json | jq -r "[.[] | select(.IndustryGroupRank == \"$grp\")]
+| sort_by(
+    -(.CompositeRating | if . == \"\" or . == null then 0 else tonumber end),
+    -(.RSRating | if . == \"\" or . == null then 0 else tonumber end)
+  )
+| .[].Symbol" | grep -n "." | grep ":$1$" | cut -d":" -f1
+
+}
+
+desc() {
+  for symbol in "$@"; do
+    symbol $symbol
+    grp=$(cat datalist.json |jq -r "
+      def rank: .IndustryGroupRank | if . == \"\" or . == null then 99999 else tonumber end;
+    .[] | select(.Symbol == \"${symbol}\") | rank | floor")
+    # grp=$(grep "\b${grpRank}\b" groups.txt | sed "s/(.*//g")
+    if [[ -z $grp ]]; then
+      grp=$(rank $symbol)
+      grp=$(echo ${grpRank}: ${grp})
+      if [[ ! -z grpRank ]]; then
+        cat datalist.json | jq -r ".[] | select(.IndustryGroupRank == \"$grpRank\") | .Symbol" | tr -s "\n" "," | pbcopy
+        echo "$grp ($(pbpaste))\n" >> groups.txt
+      fi
+    fi
+
+    tickRank=$(tickerRank $symbol)
+    [ -z "$tickRank" ] && tickRank=$(symbol $symbol | grep "$symbol" | tail -1 | cut -d":" -f1)
+
+
+    echo "\n"
+    grep "^$symbol:" descriptions.txt > /dev/null
+    if [[ $? -eq 0 ]]; then
+      grpName=$(cat datalist.json |jq -r "
+    .[] | select(.Symbol == \"${symbol}\") | .IndustryName")
+      savedDesc=$(grep "^$symbol:" descriptions.txt | sed "s/.*--//g")
+      echo "\nStars?" && read stars > /dev/null
+      stars $stars
+
+      echo "$(pbpaste) $tickRank/${grp}: $grpName--${savedDesc}" | tee /dev/tty | pbcopy
+      # curl -s "https://api.nasdaq.com/api/company/$symbol/company-profile" --header 'user-agent: insomnia/9.1.0' | jq ".data.CompanyDescription.value"
+
+      return
+    fi
+
+    description=$(curl -s "https://myibd.investors.com/searchapi/checkup/$symbol" \
+    -H 'accept: */*' \
+    -H 'accept-language: en-US,en;q=0.9' \
+    -H 'origin: https://research.investors.com' \
+    -H 'priority: u=1, i' \
+    -H 'referer: https://research.investors.com/' \
+    -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+    -H 'sec-ch-ua-mobile: ?0' \
+    -H 'sec-ch-ua-platform: "macOS"' \
+    -H 'sec-fetch-dest: empty' \
+    -H 'sec-fetch-mode: cors' \
+    -H 'sec-fetch-site: same-site' \
+    -H 'sec-gpc: 1' \
+    -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' | jq -r '.ChartAnalysis, .Descripion' | tail -1)
+
+    grpName=$(cat datalist.json |jq -r "
+    .[] | select(.Symbol == \"${symbol}\") | .IndustryName")
+    echo "$symbol: $tickRank/${grp}: ${grpName}--${description}" >> descriptions.txt
+
+    curl -s "https://api.nasdaq.com/api/company/$symbol/company-profile" --header 'user-agent: insomnia/9.1.0' | jq ".data.CompanyDescription.value"
+    # tickerDesc $symbol
+    echo "Stars?" && read stars > /dev/null
+    stars $stars
+    sss=$(pbpaste)
+
+    echo "$sss $(grep "^$symbol:" descriptions.txt | cut -d":" -f2-)" | tee /dev/tty | pbcopy
+  done
+
+  read sdfdf
+  msEstimates $1
+}
+
+about() {
+  local stocks_dir=~/workspaces/stocks
+  for symbol in "$@"; do
+    if [ -f "$stocks_dir/companies/$symbol.txt" ]; then
+      cat "$stocks_dir/companies/$symbol.txt"
+      if [ $# -gt 1 ]; then
+        continue
+      fi
+
+      echo "\nWant to update?" && read ans
+      if [[ "$ans" != "y" && "$ans" != "Y" ]]; then
+        return
+      fi
+    fi
+
+    echo "-------------------------\n"
+
+    ( cd "$stocks_dir" && ./claude-cli-summarize-stock.sh -s "$symbol" | tee /dev/tty > temp.txt \
+      && mv temp.txt "companies/$symbol.txt" )
+  done
+}
+
+findDesc() {
+  if [ "$#" -eq 0 ]; then
+    grep -i "$1" descriptions.txt
+    grep -il "$1" companies/*.txt
+
+    return
+  fi
+
+  grep -i "$1" descriptions.txt | grep -i "$2" | grep -i "$3"
+  grep -il "$1" companies/*.txt | grep -i "$2" | grep -i "$3"
+}
+
+kup() {
+  description=$(curl -s "https://myibd.investors.com/searchapi/checkup/$1" \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'origin: https://research.investors.com' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://research.investors.com/' \
+  -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-gpc: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' | jq -r '.ChartAnalysis, .Descripion' | tail -1)
+
+  echo $description
+  grep "^$1:" descriptions.txt > /dev/null
+  if [[ $? -ne 0 ]]; then
+    echo "^$1: $description" >> descriptions.txt
+  fi
+
+  echo "Composite | RSRating | Group"
+  rank $1 > rank.json
+  cat rank.json | jq -r '.content.fundamentalDataBlock.epsRatingBlock.cOMPOSITE, .content.graphData.RSRating, .content.companyInfo.industryGroup' | tr "\n" "|"
+  about=$(cat rank.json | jq -r '.content.companyInfo.industryGroup' | tr "\n" "|")
+  udvol=$(getUpDownVolume $1)
+  echo "\n"
+  jq ".content.companyInfo.industryGroup, .content.fundamentalDataBlock.topRSReport" rank.json
+
+  stockURL=$(stockurl $1 | sed "s/stock-quotes/stock-checkup/")
+
+  echo "--------Ranks------"
+  # sector $1
+  echo "${about}: $description" | pbcopy
+  open "${stockURL}#:~:text=Checklist"
+  # echo "Rank?" && read rnk
+  # echo "Group?" && read grp
+  # echo "U/D Volume?" && read udvol
+
+  # echo "${about}\n${rnk}\n${grp}\n${udvol}" | tee /dev/tty | pbcopy
+}
+chart() {
+  for symbol in "$@"
+  do
+    open "https://research.investors.com/ibdchartsenlarged.aspx?cht=pvc&type=daily&symbol=$symbol"
+  done
+}
+mkp() {
+  for symbol in "$@"
+  do
+    rank $symbol | jq ".content.companyInfo | {symbol, marketCapitalizationPrimary, shortInterestRatio}"
+  done
+}
+
+
+industry() {
+output=$(cat <<EOF
+{
+  "Symbol": "$1"
+}
+EOF
+)
+  curl -s 'https://marketsurge.investors.com/mstool/api/tool/industry-group-summary' \
+    -H 'accept: */*' \
+    -H 'accept-language: en-US,en;q=0.9' \
+    -b 'adOu=N; ibdpwv=1; ibdPV=1; ASP.NET_SessionId=gvj20sbmjakl1rfbrses5mbh; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; chartAd=35; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; utag_main__sn=2; csrf_token=cTVTBuva-JR1lMHdUFVEaY4-Xt-ha9ufeQW8; ca_rt=zRdDMtIEGN50EPNs2LK37w.CtO7coxMIxKvxerU4gRO0RBL6fv5NLsrePcxQR0mI91NtbAllxqdK_FYP1UpBTUN-IkTWMvRjIbwA0irr6Qmeh3g2LKm1i1vEfD8s2gI-vo; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw9kFtPAjEQhf9Ln3eh7fSy5UmQlWyCl4CaGGNI2bZQ3QXCFlZj_O92EXk7850zk5n5Rit_tJvFRtcWDdB87Y8aJcjp2ldf__RlFJGtta9i0XSRryVRmbxadaxXbuvoHw7eRLs0CpyUPGXEiZRhCulSAk8JVczajGBscUyHvS4_Tg1aK4zLTGMCSymIYIYwx42FTHCqIbOcc2VAGALgHLfCZEwpxTMBzhBs47D9trINGryim1mez_JJWtyNi-di_DScRrcYjdPienhWw7w4q9v5w-wiJ_cX-ThFbwnSh7BeBN_dTyRVHIOiLEHl3upgzUKHyLlSFIBjniB_ApLRGAWJ47s-d39AUnkCvokronUIu2bQ77dt22ub9-53_bLydhPQzy9e5W7U.aFsTr2ZuFoAq5GgZnWmmgAjkl6TEPIyp7-yUiZImscmmwxgj-X380HHjvXdIvR-a1psP93RLeNRjCBHJnDVUh4_e0SOMwwyz4E1m8wLxvYqS_guHJ1AO1WZelgnbHlDUNPgqO1ROnj0J98LabVmcA8gYAiQqBbJAefPMt2xVytvi-FLnOxJUmzFa7Iti_vjqTGiRZUGnf5t3mOiOXvTnskU5leGcKqb1zDTKRfn_dnX9wH-i9EFVZJrAYLBKGqdxZNsBMcgS9rRVodZAVgwcmyJgvW1crcHVNhjiL9-tDRrLCD0DFAqODa1_CyK0HoX3FN07T4Tyw_vLCWsf3APnRQ; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; .ASPXAUTH=69E1D7DE3A3684C773CED0D18836150EC8407EC9EB4CC863B14C469256419CAEDD10381C8302BB0FE6B1E0D91F0163F714FBBF723A77BBA17C8166C74C58833AB4ACFC5A0A0D4A0C05861EC7FAB97731B62AD8E88589D9E8624B60209F34646C0A63F194FC810484B932F4A126335C4E7D17829EBBAA2035650718552C0280E0564177DEAD89CD14AB3E5A2B5D15D862B0E6FA49739523A429502F1DEFEB166E16688839DC963850F0533CC733D599021DE02CD3DE9C8BA4134643F2FB7608F0C2CFE2FBF5BB76935A047621027C424680EBBBF859DFD85C974CAA8671C94DC80C6EB73110C1750B3D1395FBD1A0C817FAA48C0D18756B4A633AB2FD7ECDC15BA738B2A1386EDA5F469011D6E0310B1DA71B208D1D4F04C6D70889C86C7EDF0079516CF3E6272D8A481272BE3A076D1E251F8160F60940295F3B888EE6BC920648EAE116611F30A32FC587D7B8CFB70573DD475BD20EF1FA17C3B40515B25E8E49E87E86E7C005D8A887EC5E2D10E42499583C2331F660D7B21449158BEEA5D81743A2D7FB2E48B3CAC4277061F23542E0B05E409556AC87BEFD15F5DC6E2541702A9E2FECBAB7936DFDF9E5E64A063B0AF77AC28044EDAB156E27542BD6B5D4681C6DCAB05A6BA842ABC44C7DAEB933024BE9ED; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=f5f76e8c-0146-4aff-91bb-a3ae7768a89d&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+  --data-raw "$output" | jq "."
+}
+
+instrument() {
+       curl -s 'https://marketsurge.investors.com/mstool/api/chart/search-instruments' \
+       -H 'accept: */*' \
+       -H 'accept-language: en-US,en;q=0.9' \
+       -H 'content-type: application/json' \
+       -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; chartAd=35; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; utag_main__sn=2; csrf_token=cTVTBuva-JR1lMHdUFVEaY4-Xt-ha9ufeQW8; ca_rt=zRdDMtIEGN50EPNs2LK37w.CtO7coxMIxKvxerU4gRO0RBL6fv5NLsrePcxQR0mI91NtbAllxqdK_FYP1UpBTUN-IkTWMvRjIbwA0irr6Qmeh3g2LKm1i1vEfD8s2gI-vo; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw9kFtPAjEQhf9Ln3eh7fSy5UmQlWyCl4CaGGNI2bZQ3QXCFlZj_O92EXk7850zk5n5Rit_tJvFRtcWDdB87Y8aJcjp2ldf__RlFJGtta9i0XSRryVRmbxadaxXbuvoHw7eRLs0CpyUPGXEiZRhCulSAk8JVczajGBscUyHvS4_Tg1aK4zLTGMCSymIYIYwx42FTHCqIbOcc2VAGALgHLfCZEwpxTMBzhBs47D9trINGryim1mez_JJWtyNi-di_DScRrcYjdPienhWw7w4q9v5w-wiJ_cX-ThFbwnSh7BeBN_dTyRVHIOiLEHl3upgzUKHyLlSFIBjniB_ApLRGAWJ47s-d39AUnkCvokronUIu2bQ77dt22ub9-53_bLydhPQzy9e5W7U.aFsTr2ZuFoAq5GgZnWmmgAjkl6TEPIyp7-yUiZImscmmwxgj-X380HHjvXdIvR-a1psP93RLeNRjCBHJnDVUh4_e0SOMwwyz4E1m8wLxvYqS_guHJ1AO1WZelgnbHlDUNPgqO1ROnj0J98LabVmcA8gYAiQqBbJAefPMt2xVytvi-FLnOxJUmzFa7Iti_vjqTGiRZUGnf5t3mOiOXvTnskU5leGcKqb1zDTKRfn_dnX9wH-i9EFVZJrAYLBKGqdxZNsBMcgS9rRVodZAVgwcmyJgvW1crcHVNhjiL9-tDRrLCD0DFAqODa1_CyK0HoX3FN07T4Tyw_vLCWsf3APnRQ; __tae=1742369090841; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; .ASPXAUTH=69E1D7DE3A3684C773CED0D18836150EC8407EC9EB4CC863B14C469256419CAEDD10381C8302BB0FE6B1E0D91F0163F714FBBF723A77BBA17C8166C74C58833AB4ACFC5A0A0D4A0C05861EC7FAB97731B62AD8E88589D9E8624B60209F34646C0A63F194FC810484B932F4A126335C4E7D17829EBBAA2035650718552C0280E0564177DEAD89CD14AB3E5A2B5D15D862B0E6FA49739523A429502F1DEFEB166E16688839DC963850F0533CC733D599021DE02CD3DE9C8BA4134643F2FB7608F0C2CFE2FBF5BB76935A047621027C424680EBBBF859DFD85C974CAA8671C94DC80C6EB73110C1750B3D1395FBD1A0C817FAA48C0D18756B4A633AB2FD7ECDC15BA738B2A1386EDA5F469011D6E0310B1DA71B208D1D4F04C6D70889C86C7EDF0079516CF3E6272D8A481272BE3A076D1E251F8160F60940295F3B888EE6BC920648EAE116611F30A32FC587D7B8CFB70573DD475BD20EF1FA17C3B40515B25E8E49E87E86E7C005D8A887EC5E2D10E42499583C2331F660D7B21449158BEEA5D81743A2D7FB2E48B3CAC4277061F23542E0B05E409556AC87BEFD15F5DC6E2541702A9E2FECBAB7936DFDF9E5E64A063B0AF77AC28044EDAB156E27542BD6B5D4681C6DCAB05A6BA842ABC44C7DAEB933024BE9ED; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=f5f76e8c-0146-4aff-91bb-a3ae7768a89d&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals&adJo=tech&adAg=35-44' \
+       -H 'origin: https://marketsurge.investors.com' \
+       -H 'priority: u=1, i' \
+       -H 'referer: https://marketsurge.investors.com/mstool' \
+       -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+       -H 'sec-ch-ua-mobile: ?0' \
+       -H 'sec-ch-ua-platform: "macOS"' \
+       -H 'sec-fetch-dest: empty' \
+       -H 'sec-fetch-mode: cors' \
+       -H 'sec-fetch-site: same-origin' \
+       -H 'sec-gpc: 1' \
+       -H 'traceparent: 00-84856a842da9dd61d8be02f4091fcb54-db681fa1f3e251a9-01' \
+       -H 'tracestate: 1022681@nr=0-1-3396106-1386154682-db681fa1f3e251a9----1742451704139' \
+       -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+       -H 'x-newrelic-id: VwUOV1dTDhABVllQDgcDV1YA' \
+       --data-raw "\"$1\"" | jq "."
+}
+
+srep() {
+  word_count=$(echo $@ | tr "," " " | wc -w)
+  if [[ $word_count -eq 1 ]]; then
+    rank $1 > rank.json
+    ./sales.sh > salesreport.txt
+
+    debt_to_equity=$(cat rank.json | jq -r '.content.fundamentalDataBlock.miscBlock.debt')
+
+    cat salesreport.txt
+
+    rm growthrates.txt 2> /dev/null
+    echo "\n"
+    ./quarters.sh < salesreport.txt | jq ".quarters[]" | while read q; do
+        q=$(echo $q | sed "s/\"//g");
+        grep $q salesreport.txt | tee /dev/tty >> growthrates.txt;
+      done
+    cat growthrates.txt | ./growth.sh | tee /dev/tty | jq "select(.sales_growth_percent >= 200 or .current_sales_growth_percent >= 200)"
+
+    eps_yr_est=$(cat datalist.json | jq -r ".stock_list[] | select(.symbol == \"${1}\") | ." | jq ".curr_yr_eps_est_percent_chg")
+
+    ./cagr.sh < salesreport.txt | jq --arg sym "$1" --arg debt "$debt_to_equity" --arg eps_yr_est "$eps_yr_est" '{symbol: $sym, debt_to_equity: $debt, curr_yr_eps_est_percent_chg: $eps_yr_est} + .' | jq "."
+
+    ./cagr.sh < salesreport.txt | jq --arg sym "$1" --arg debt "$debt_to_equity" --arg eps_yr_est "$eps_yr_est" '{symbol: $sym, debt_to_equity: $debt, curr_yr_eps_est_percent_chg: $eps_yr_est} + .' | jq "{eps_consecutive_Y_growth_est, sales_consecutive_Y_growth_est, curr_yr_eps_est_percent_chg}" | pbcopy
+
+    return
+  fi
+
+  rm srep.txt 2> /dev/null
+  rm srep.json 2> /dev/null
+  tickers=$(uncomma $@ | sed "s/\"//g")
+  for symbol in $(echo $tickers[@]); do
+    echo $symbol
+    rank $symbol > rank.json
+    ./sales.sh > salesreport.txt
+    debt_to_equity=$(cat rank.json | jq -r '.content.fundamentalDataBlock.miscBlock.debt')
+
+    rm growthrates.txt 2> /dev/null
+    echo "\n"
+    ./quarters.sh < salesreport.txt | jq ".quarters[]" | while read q; do
+        q=$(echo $q | sed "s/\"//g");
+        grep $q salesreport.txt | tee /dev/tty >> growthrates.txt;
+      done
+
+    # echo "\n$symbol =====" >> srep.txt
+    cat growthrates.txt | ./growth.sh | jq --arg sym "$symbol" --arg debt "$debt_to_equity" '{symbol: $sym, debt_to_equity: $debt} + .' >> srep.json
+    printf "," >> srep.json
+    ./cagr.sh < salesreport.txt | jq --arg sym "$symbol" --arg debt "$debt_to_equity" '{symbol: $sym, debt_to_equity: $debt} + .' >> srep.json
+    printf "," >> srep.json
+  done
+
+  cat srep.json | jq "select(.sales_growth_percent >= 200 or .current_sales_growth_percent >= 200)"
+}
+
+rank() {
+  groupRank=$(curl -s "https://myibd.investors.com/searchapi/checkup/$1" \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'origin: https://research.investors.com' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://research.investors.com/' \
+  -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-gpc: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' | jq -r '.IndustryGroup' | tail -1)
+
+  echo $groupRank
+  return
+
+
+ticks=$(( $(date +%s) * 1000 ))
+seconds=$(TZ=UTC date +%s)
+two_years_ago=$((seconds - 63115200))
+ticksStart=$((two_years_ago * 1000))
+
+output=$(cat <<EOF
+{
+  "symbol": "$1",
+  "msInstrumentID":0,
+  "dateInfo": {
+    "startDate":"/Date($ticksStart)/",
+    "endDate":"/Date($ticks)/",
+    "frequency":2,
+    "frequencyUnit":1,
+    "tickCount":0
+  },
+  "indexSymbol":"0S&P5"
+}
+EOF
+)
+       curl -s 'https://marketsurge.investors.com/mstool/api/getStockWeeklyChart' \
+       -H 'accept: */*' \
+       -H 'accept-language: en-US,en;q=0.9' \
+       -H 'content-type: application/json' \
+       -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; chartAd=35; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; utag_main__sn=2; csrf_token=cTVTBuva-JR1lMHdUFVEaY4-Xt-ha9ufeQW8; ca_rt=zRdDMtIEGN50EPNs2LK37w.CtO7coxMIxKvxerU4gRO0RBL6fv5NLsrePcxQR0mI91NtbAllxqdK_FYP1UpBTUN-IkTWMvRjIbwA0irr6Qmeh3g2LKm1i1vEfD8s2gI-vo; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw9kFtPAjEQhf9Ln3eh7fSy5UmQlWyCl4CaGGNI2bZQ3QXCFlZj_O92EXk7850zk5n5Rit_tJvFRtcWDdB87Y8aJcjp2ldf__RlFJGtta9i0XSRryVRmbxadaxXbuvoHw7eRLs0CpyUPGXEiZRhCulSAk8JVczajGBscUyHvS4_Tg1aK4zLTGMCSymIYIYwx42FTHCqIbOcc2VAGALgHLfCZEwpxTMBzhBs47D9trINGryim1mez_JJWtyNi-di_DScRrcYjdPienhWw7w4q9v5w-wiJ_cX-ThFbwnSh7BeBN_dTyRVHIOiLEHl3upgzUKHyLlSFIBjniB_ApLRGAWJ47s-d39AUnkCvokronUIu2bQ77dt22ub9-53_bLydhPQzy9e5W7U.aFsTr2ZuFoAq5GgZnWmmgAjkl6TEPIyp7-yUiZImscmmwxgj-X380HHjvXdIvR-a1psP93RLeNRjCBHJnDVUh4_e0SOMwwyz4E1m8wLxvYqS_guHJ1AO1WZelgnbHlDUNPgqO1ROnj0J98LabVmcA8gYAiQqBbJAefPMt2xVytvi-FLnOxJUmzFa7Iti_vjqTGiRZUGnf5t3mOiOXvTnskU5leGcKqb1zDTKRfn_dnX9wH-i9EFVZJrAYLBKGqdxZNsBMcgS9rRVodZAVgwcmyJgvW1crcHVNhjiL9-tDRrLCD0DFAqODa1_CyK0HoX3FN07T4Tyw_vLCWsf3APnRQ; __tae=1742369090841; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; .ASPXAUTH=69E1D7DE3A3684C773CED0D18836150EC8407EC9EB4CC863B14C469256419CAEDD10381C8302BB0FE6B1E0D91F0163F714FBBF723A77BBA17C8166C74C58833AB4ACFC5A0A0D4A0C05861EC7FAB97731B62AD8E88589D9E8624B60209F34646C0A63F194FC810484B932F4A126335C4E7D17829EBBAA2035650718552C0280E0564177DEAD89CD14AB3E5A2B5D15D862B0E6FA49739523A429502F1DEFEB166E16688839DC963850F0533CC733D599021DE02CD3DE9C8BA4134643F2FB7608F0C2CFE2FBF5BB76935A047621027C424680EBBBF859DFD85C974CAA8671C94DC80C6EB73110C1750B3D1395FBD1A0C817FAA48C0D18756B4A633AB2FD7ECDC15BA738B2A1386EDA5F469011D6E0310B1DA71B208D1D4F04C6D70889C86C7EDF0079516CF3E6272D8A481272BE3A076D1E251F8160F60940295F3B888EE6BC920648EAE116611F30A32FC587D7B8CFB70573DD475BD20EF1FA17C3B40515B25E8E49E87E86E7C005D8A887EC5E2D10E42499583C2331F660D7B21449158BEEA5D81743A2D7FB2E48B3CAC4277061F23542E0B05E409556AC87BEFD15F5DC6E2541702A9E2FECBAB7936DFDF9E5E64A063B0AF77AC28044EDAB156E27542BD6B5D4681C6DCAB05A6BA842ABC44C7DAEB933024BE9ED; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=f5f76e8c-0146-4aff-91bb-a3ae7768a89d&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals&adJo=tech&adAg=35-44' \
+       -H 'origin: https://marketsurge.investors.com' \
+       -H 'priority: u=1, i' \
+       -H 'referer: https://marketsurge.investors.com/mstool' \
+       -H 'sec-ch-ua: "Chromium";v="134", "Not:A-Brand";v="24", "Google Chrome";v="134"' \
+       -H 'sec-ch-ua-mobile: ?0' \
+       -H 'sec-ch-ua-platform: "macOS"' \
+       -H 'sec-fetch-dest: empty' \
+       -H 'sec-fetch-mode: cors' \
+       -H 'sec-fetch-site: same-origin' \
+       -H 'sec-gpc: 1' \
+       -H 'traceparent: 00-84856a842da9dd61d8be02f4091fcb54-db681fa1f3e251a9-01' \
+       -H 'tracestate: 1022681@nr=0-1-3396106-1386154682-db681fa1f3e251a9----1742451704139' \
+       -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+       -H 'x-newrelic-id: VwUOV1dTDhABVllQDgcDV1YA' \
+       --data-raw "$output" | jq "."
+
+ # industry $1
+}
+pat() {
+  ticks=$(( $(date +%s) * 1000 ))
+  seconds=$(TZ=UTC date +%s)
+  two_years_ago=$((seconds - 63115200))
+  three_years_ago=$((seconds - 94672800))
+  ticksStart=$((three_years_ago * 1000))
+
+  instrumentID=$(instrument $1 | jq ".content[0].instrumentID")
+  # echo $instrumentID
+
+output=$(cat <<EOF
+{
+  "userID":7816585143769098,
+  "symbol": "$1",
+  "instrumentID":$instrumentID,
+  "instrumentType":1,
+  "dateInfo": {
+    "startDate":"/Date($ticksStart)/",
+    "endDate":"/Date($ticks)/",
+    "frequency":1,
+    "frequencyUnit":1,
+    "tickCount":0
+  }
+}
+EOF
+)
+  curl -s 'https://marketsurge.investors.com/mstool/api/pattern/get-patterns' \
+  -H 'accept: application/json, text/javascript, */*; q=0.01' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+   -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; chartAd=35; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; utag_main__sn=2; csrf_token=cTVTBuva-JR1lMHdUFVEaY4-Xt-ha9ufeQW8; ca_rt=zRdDMtIEGN50EPNs2LK37w.CtO7coxMIxKvxerU4gRO0RBL6fv5NLsrePcxQR0mI91NtbAllxqdK_FYP1UpBTUN-IkTWMvRjIbwA0irr6Qmeh3g2LKm1i1vEfD8s2gI-vo; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw9kFtPAjEQhf9Ln3eh7fSy5UmQlWyCl4CaGGNI2bZQ3QXCFlZj_O92EXk7850zk5n5Rit_tJvFRtcWDdB87Y8aJcjp2ldf__RlFJGtta9i0XSRryVRmbxadaxXbuvoHw7eRLs0CpyUPGXEiZRhCulSAk8JVczajGBscUyHvS4_Tg1aK4zLTGMCSymIYIYwx42FTHCqIbOcc2VAGALgHLfCZEwpxTMBzhBs47D9trINGryim1mez_JJWtyNi-di_DScRrcYjdPienhWw7w4q9v5w-wiJ_cX-ThFbwnSh7BeBN_dTyRVHIOiLEHl3upgzUKHyLlSFIBjniB_ApLRGAWJ47s-d39AUnkCvokronUIu2bQ77dt22ub9-53_bLydhPQzy9e5W7U.aFsTr2ZuFoAq5GgZnWmmgAjkl6TEPIyp7-yUiZImscmmwxgj-X380HHjvXdIvR-a1psP93RLeNRjCBHJnDVUh4_e0SOMwwyz4E1m8wLxvYqS_guHJ1AO1WZelgnbHlDUNPgqO1ROnj0J98LabVmcA8gYAiQqBbJAefPMt2xVytvi-FLnOxJUmzFa7Iti_vjqTGiRZUGnf5t3mOiOXvTnskU5leGcKqb1zDTKRfn_dnX9wH-i9EFVZJrAYLBKGqdxZNsBMcgS9rRVodZAVgwcmyJgvW1crcHVNhjiL9-tDRrLCD0DFAqODa1_CyK0HoX3FN07T4Tyw_vLCWsf3APnRQ; __tae=1742369090841; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; .ASPXAUTH=69E1D7DE3A3684C773CED0D18836150EC8407EC9EB4CC863B14C469256419CAEDD10381C8302BB0FE6B1E0D91F0163F714FBBF723A77BBA17C8166C74C58833AB4ACFC5A0A0D4A0C05861EC7FAB97731B62AD8E88589D9E8624B60209F34646C0A63F194FC810484B932F4A126335C4E7D17829EBBAA2035650718552C0280E0564177DEAD89CD14AB3E5A2B5D15D862B0E6FA49739523A429502F1DEFEB166E16688839DC963850F0533CC733D599021DE02CD3DE9C8BA4134643F2FB7608F0C2CFE2FBF5BB76935A047621027C424680EBBBF859DFD85C974CAA8671C94DC80C6EB73110C1750B3D1395FBD1A0C817FAA48C0D18756B4A633AB2FD7ECDC15BA738B2A1386EDA5F469011D6E0310B1DA71B208D1D4F04C6D70889C86C7EDF0079516CF3E6272D8A481272BE3A076D1E251F8160F60940295F3B888EE6BC920648EAE116611F30A32FC587D7B8CFB70573DD475BD20EF1FA17C3B40515B25E8E49E87E86E7C005D8A887EC5E2D10E42499583C2331F660D7B21449158BEEA5D81743A2D7FB2E48B3CAC4277061F23542E0B05E409556AC87BEFD15F5DC6E2541702A9E2FECBAB7936DFDF9E5E64A063B0AF77AC28044EDAB156E27542BD6B5D4681C6DCAB05A6BA842ABC44C7DAEB933024BE9ED; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=f5f76e8c-0146-4aff-91bb-a3ae7768a89d&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals&adJo=tech&adAg=35-44' \
+   -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' \
+  --data-raw "$output" | jq "." > patterns.json
+
+  # cat patterns.json | jq "."
+
+  echo "CupWithHandles"
+  cat patterns.json | jq ".cupWithHandles" | grep "baseStartDate" | while read startDate; do
+    toDate $(echo $startDate | head -1 | cut -d':' -f2 | sed "s/[\/,]//g")
+  done
+  cat patterns.json | jq ".cupWithHandles" | grep "baseStage"
+
+  echo "handles"
+  cat patterns.json | jq ".cupWithHandles" | grep "handleStartDate" | while read startDate; do
+    toDate $(echo $startDate | head -1 | cut -d':' -f2 | sed "s/[\/,]//g")
+  done
+
+  echo "Consolidations"
+  cat patterns.json | jq ".consolidations" | grep "baseStartDate" | while read startDate; do
+    toDate $(echo $startDate | head -1 | cut -d':' -f2 | sed "s/[\/,]//g")
+  done
+  cat patterns.json | jq ".consolidations" | grep "baseStage"
+
+  echo "Double Bottoms"
+  cat patterns.json | jq ".doubleBottoms" | grep "baseStartDate" | grep "baseStartDate" | while read startDate; do
+    toDate $(echo $startDate | head -1 | cut -d':' -f2 | sed "s/[\/,]//g")
+  done
+  cat patterns.json | jq ".doubleBottoms" | grep "baseStage"
+
+  echo "Flat Bases"
+  cat patterns.json | jq ".flatBases" | grep "baseStartDate" | grep "baseStartDate" | while read startDate; do
+    toDate $(echo $startDate | head -1 | cut -d':' -f2 | sed "s/[\/,]//g")
+  done
+  cat patterns.json | jq ".flatBases" | grep "baseStage"
+}
+
+toDate() {
+  json_date="$1"
+  if [[ -z $1 ]]; then
+    echo "Enter MS json date"
+    read json_date
+  fi
+  # Extract timestamp using sed
+  timestamp=$(echo "$json_date" | sed "s/Date(\(.*\)-.*)/\1/")
+
+  # Convert timestamp from milliseconds to seconds
+  timestamp_seconds=$((timestamp / 1000))
+
+  # Convert to readable format
+  readable_date=$(date -u -r "$timestamp_seconds" +"%Y, %d %b")
+
+  echo "$Red $readable_date$NC"
+}
+
+msdate() {
+  if [[ -z $1 ]]; then
+    timestamp=$(date +%s)
+  else
+    timestamp=$(date -j -f "%d-%m-%Y %H:%M:%S UTC" "$1 16:00:00 UTC" +%s)
+  fi
+  timestamp_ms=$((timestamp * 1000))
+  timezone_offset=$(date +%z)
+  ms_json_date="/Date($Red${timestamp_ms}$NC${timezone_offset})/"
+
+  echo "$ms_json_date"
+}
+
+kindle() {
+  ls /Users/1041803/Downloads/Kindle\ books/*.epub | grep -i "$1"
+}
+macro() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks
+
+  tickers=$(grep MACRO .env | sed "s/MACRO=\(.*\)/\1/")
+  for ticker in $(echo ${tickers[@]}); do
+    price $ticker
+  done
+
+  cd $curDir
+}
+
+topRank() {
+  curl -S 'https://ibdstockscreener.investors.com/research-tool/api/ibdlist/get/_TRSU10_CompRating' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; csrf_token=cTVTBuva-JR1lMHdUFVEaY4-Xt-ha9ufeQW8; ca_rt=I3v9e6rp2u-nqJUx2jMrgA.4kaON8aCoVNqKW2oGgn0bptOxfNJgF8fOU2QXmlHtpN6y76jxsJ7xrH0BFM9hXk3HJxPiVnlz8fuEEEPYRCwf5OyZ_HcNbH6XGNdT_hiVHM; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=63048618-ac2d-4c0d-92ce-07c152269155&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals&adJo=tech&adAg=35-44&adGe=Male&adOu=N&adTiD=1 - 5 years investing&adTrD=31 - 40 trades&adJoD=it professional&tdp=False&tdpn=False&twp=False&twpn=False&tdc=False&tdcn=False&twc=False&twcn=False&te=False&ten=False; chartAd=15; _pubcid=de1ba4bc-721a-4cbe-9314-f4395399b0cb; _gcl_au=1.1.1613415193.1741759510.21440533.1748066858.1748067000; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw1kF1PgzAUhv9Lr2FraQvtroSBhmxxyRaXqTGko2WrA_ZBB07jf7eg3p3zvOfrPV9gp1tVZ7WoFJiA1V63AjigEJUub__0ObJIVUKXNmn6ktsWcRbc7Xo2yo-V1a9XLa2cS46LIKAuQYXvEuhhdxtg6iKPE6UYglBBW20uIj8MDUJwCHMmIMLbwEc-kYgUVCrMfOoJzBSllEvsS4RxUVDlS0Y455T5uJAIKjvscixVAyav4H6ZJMvkwU0f43Sdxk_h3KppFLvpNPyLwiQFbw4QV7PPjO7tocDjFGLuEQc0w0k1ic5w400bfKSbzxWLw0OFzpAYHG3qTi7npFvr7GV2S3nT5rN2cVwkeb8gvyhhlMyEsWMp5x7GFFIH6AEExDr1IbN71MfpFxDMBqAbawDsjTk1k_G467pR17z3nx3npVa1Ad8_uDF6_Q.ktSyaVgflr6vP8ksJfNgW0WXeDzVA3S-iMfkZycL1d06wtHlijHIxvlaRmFmH_Lfau79l17VVmizaibNvauECeU-B295mvJEM5Lsa_mBgJHKtwTgvdY3QLnO8g6OEIDbDBRF3mzBYzARXxJCmkBgaaRWBVWvl_JISeGrmaV5kleq30jR5qcKwEvBxw9lJtvt67xPrkfkEkbXawQe1ld4vht8I3qHEYZeL7NtXlU5Y2SnO-dGenvAURkyA5F2kbBebYEDShfOr2OCJgLVWFB60Nig4cKPaPaSLSrL4rnAeVLueOUNpzdoTmQTkfZgN5JQa7Yv5Z3fDbLSy0tgkfnY3Q; consentUUID=9ffd908f-d0c7-4175-b7b8-fcac9e4deaba; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; __gads=ID=55fb4e0423b650c7:T=1744343058:RT=1749182619:S=ALNI_MbB5u1D9g_vC03CJHwmBuT-nIAApQ; ibdFV=1; .ASPXAUTH=FD81124D1FF6AE6664A293FB03EC1CCF6A12E9288A54D9908D1415809835DFD31FE2CA7DE2C396E050725A6D648D22EADBFEB1BB4779B3F6528C7EB3FCDE0927F0097AAF728806D4DF3AE3324D3E25984021F70A04CEE5BDB770B522AC3CF3FE759576FD5E2A318F115B088A0B916E8F2767272D694046C32A1B451334C06A5DB88D715CFB4489F1A1210D12C7468F09A61C7D6143067A997FAAB6C15ADDDE72A5A38EE9CAEBE2C109C545AC4188BD85FA08F80DFDCBB3C64FDCC0799D275164B2C1A35F733A0E051C4DFA497300EF9D56DD09956131BDD076AF8CD01C4C0128CE8261069C35A4505ECBDA1DED1856608150BA96BCB8F21A143F50D1A70CADE1D9BA309C5853858B33F59DE44ED52124C174EAF2E3BE43F4DADDADE57D1CE7EBB30B8B2A7E2A200AA99DB989BCE7CD5299002883EA7AF108507959574CD5D5E93FE50EF935587BFDB8609832719CF2AC99AAFCD9AC27E382730DDF3AE5454FAA5932C8DF3BC34B4E5D098EBB4BB3B26CA1B15F02F696CE26C019E48DE647B986B816EE559E267E0E0368D21DD3A3D3FCD2CFCAB2FC25B859097EC16DC4DE1703676810DC6AE895CBA715599AC6AE41EF1EE6B691; __tac=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3d3dy5waWFuby5pbyIsImF1ZCI6ImZ4aDhQdEVKcHUiLCJzdWIiOiJ7XCJ1XCI6XCJhYTkwMGM4YTAxM2I3NjE2NGQxNGY1ZGUzODY1MmEzOGU1NTU5ZDM2ZDEzM2ZmNWU2ZDg0OTk5NTg2M2ZkMTBlXCJ9IiwiZXhwIjoxNzUxODc5ODI0LCJpYXQiOjE3NDkyODc4MjR9.EgQNXuvZbFHH7XukcivbufLLTqDiTrDtMoLB3dp07Dk; __tae=1749287824171; ibdVC=908; ibdCHTCNT=060720251; ibdCUPPREVSYM=REVG+0; ibdCUPCNT=060720251; _pctx=%7Bu%7DN4IgrgzgpgThIC5QENkE4AMGDGAOZGAjAMwBGA7AGyGUAsAJobQGYCs9UxulrATMlyithaesUqNixZmygTctNEtbdpjDFESgADjCjMAlgA9EIAO4QAViAA0IAC4BPbZoQgAagA0QAXx93IWABle2R7SFM9AHMDCHtYKHpbEAgDeIBJJLdCEkJyVhzaQlxuXGIMXBpfIA; s_visit=1; _parsely_session={%22sid%22:59%2C%22surl%22:%22https://www.investors.com/category/research/ibd-industry-themes/%22%2C%22sref%22:%22https://research.investors.com/%22%2C%22sts%22:1749294298633%2C%22slts%22:1749182611227}; _parsely_visitor={%22id%22:%22pid=b663cb02-f58e-41d6-b52f-5589553f2153%22%2C%22session_count%22:59%2C%22last_session_ts%22:1749294298633}; QSI_SI_b3B9jsfbYnFoklL_intercept=true; Last5Symbols=EME,WMB,USM,TIGO,FCX; mbox=session#991db549454e40b3961329fa319640eb#1749296598; _pubcid_cst=DCwOLBEsaQ%3D%3D; ibdPREVSYM=WMB+1749294808.7607; ibdQCNT=060720253; __pvi=eyJpZCI6InYtbWJtM3Q0eWU2dmprdHpjaSIsImRvbWFpbiI6Ii5pbnZlc3RvcnMuY29tIiwidGltZSI6MTc0OTI5NDgxNDg2OX0%3D; __tbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; __cf_bm=uGeD9a442BxLWKueASONM1OSXZnZ1N.5ypwIOn8WfG8-1749294933-1.0.1.1-bSqRYCfVWeXFiK_ASWSPb6CTa5YuyLHDvORZFxIUpmuYnP7Lsd_VqAjGxI0zRyd6lhfQQlTL.6v.HLe_0MJg1K3PG94cN.9HLbn4LnE6vpE; ibdVS=638848919439039094; QSI_HistorySession=https%3A%2F%2Fwww.investors.com%2Fcategory%2Fresearch%2Findustry-snapshot%2F~1749294387827%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-lists%2Fibd-50%2F~1749294403517%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-quotes%2Fnyse-emcor-group-eme.htm%3Flist%3Dibd50%26type%3Dweekly~1749294649842%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-quotes%2Fnyse-williams-cos-wmb.htm~1749294740942%7Chttps%3A%2F%2Fget.investors.com%2Fleaderboard%2F%3Fsrc%3DAPA1BQ~1749294783657%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-quotes%2Fnyse-williams-cos-wmb.htm~1749294812924%7Chttps%3A%2F%2Fwww.investors.com%2F~1749295121122%7Chttps%3A%2F%2Fwww.investors.com%2Fsearch-results%2F%3Fquery%3Dgroup%2520rankings~1749295145520; _px3=651bdc1585add74fd6ee1789616a77e611bc703796f4c3865a5bd8b43af57778:vbidAFFbV78EG2ibtoa6xcd82IirXwiOeTF4TJWbivVJiDgbQdHmzM0x2UUyWcsfVv3naJBiaOM8HhxQlvuE3A==:1000:CVonEe16lLgszcFt79wdEhbcxklng6uE/wBS9Nkvm21iNACK+6pNcNJTKqhm6McaU9lQS2wkYMvwLmZCtRaYziRTRAX1/IVkKZYDeatQAvTRYgUDKoNdvf0mz6pyeColaBc3cxTavJbPcjdGU/j3V/w50QN/f3BhLyMitOCyopEHjyczn/tshVJrj2Q7RLLe4UgABB7rjeLR3pfYK9lw08CSgaMBMlfiUUcsMRYgYo8=; _parsely_slot_click={%22url%22:%22https://www.investors.com/search-results/?query=group%2520rankings%22%2C%22x%22:373%2C%22y%22:488%2C%22xpath%22:%22//*[@id=%5C%22menu-main-nav-1%5C%22]/li[3]/ul[1]/li[1]/ul[1]/li[13]/a[1]%22%2C%22href%22:%22https://ibdstockscreener.investors.com/%22}; watchingStockList=%5B%5D; watchedtockList=%5B%5D; AUTH_RT=eyJhbGciOiJIUzUxMiJ9.eyJzZXNzaW9uX2lkIjoiZDk2NjU3MWQtODhlZC00MGI1LTg0NmYtNzg1MDZlMTE4YjcwIiwibXNfdXNlcl9pZCI6Ijc4MTY1ODUxNDM3NjkwOTgifQ.ng-xX1IIvH38jkjUvBhaMcaWry1uHMwVy0O0hgwGcxI03nxyBribUjdLbfnLxIvw2VgCFi3ekx-VGdRtIDCBuQ; isMarketTime=true; s_sq=%5B%5BB%5D%5D; AMCV_56B3E406563CC6B77F000101%40AdobeOrg=-127034327%7CMCIDTS%7C20246%7CMCMID%7C92229492508216939856909384198804095497%7CMCAID%7CNONE%7CMCOPTOUT-1749302641s%7CNONE%7CvVersion%7C5.1.0' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://ibdstockscreener.investors.com/' \
+  -H 'sec-ch-ua: "Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' > topRank.json
+
+  cat topRank.json | jq ".stock_list[] | {symbol, comp_rating, rs_rating, industry_group_rank}"
+  cat topRank.json | jq ".stock_list[].symbol" | sed "s/\"//g" | tr "\n" "," | pbcopy
+}
+ibd50() {
+  curl -S 'https://leaderboard.investors.com/mobileapi/dl/ibd50' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; _pubcid=de1ba4bc-721a-4cbe-9314-f4395399b0cb; ibdCUPPREVSYM=REVG+0; ibdCUPCNT=060720251; Last5Symbols=EME,WMB,USM,TIGO,FCX; ibdPREVSYM=WMB+1749294808.7607; ibdQCNT=060720253; _gcl_au=1.1.1305426248.1749565752; _pubcid_cst=DCwOLBEsaQ%3D%3D; ibdCHTCNT=0610202522; chartAd=16; _parsely_visitor={%22id%22:%22pid=b663cb02-f58e-41d6-b52f-5589553f2153%22%2C%22session_count%22:64%2C%22last_session_ts%22:1749701374671}; __gads=ID=55fb4e0423b650c7:T=1744343058:RT=1749701493:S=ALNI_MbB5u1D9g_vC03CJHwmBuT-nIAApQ; ibdVC=918; __cf_bm=6fHv5FvDwDA.aXE0GtRCRuDYwwks2o3kuLXpbwtL2PI-1749965485-1.0.1.1-U2R3fCevt.MurbdJ9xBRhJtIxXZEQD2FhVsS6TKE634KEsXto36wcmxB2eOzdD1KhijQcuKz6rsw5I1dvgjoa_3VRX8zNM1vydcMwjD0msE; mbox=session#6304e53efdfa41d1b6a8e63003bc7e64#1749967349; s_visit=1; consentUUID=bfb1ad13-2786-4c8b-9f5d-f31846fd44cc; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; __tac=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3d3dy5waWFuby5pbyIsImF1ZCI6ImZ4aDhQdEVKcHUiLCJzdWIiOiJ7XCJ1XCI6XCJhYTkwMGM4YTAxM2I3NjE2NGQxNGY1ZGUzODY1MmEzOGU1NTU5ZDM2ZDEzM2ZmNWU2ZDg0OTk5NTg2M2ZkMTBlXCJ9IiwiZXhwIjoxNzUyNTU3NDk0LCJpYXQiOjE3NDk5NjU0OTR9.XZ_9jV3148dC5SohzBer4xWMy-A181TNxbEjZlnCrhk; __tae=1749965494376; __tbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; __pvi=eyJpZCI6InYtbWJ4ODlzeWZ1dXltOHoybSIsImRvbWFpbiI6Ii5pbnZlc3RvcnMuY29tIiwidGltZSI6MTc0OTk2NTQ5NTY5OH0%3D; ibdFV=1; _pctx=%7Bu%7DN4IgrgzgpgThIC5QENkE4AMGDGAOZGAjAMwBGA7AGyGUAsAJobQGYCs9UxulrATMlyithaesUqNixZmygTctNEtbdpjDFESgADjCjMAlgA9EIAO4QAViAA0IAC4BPbZoQgAagA0QAXzupMHHwiMioaBiY2Di4efkFhVlFxSWlZeUVlVWZ1KGALSx8tEF19Y1N82wdnVxAAYW8fP3BoGABle2R7SFM9AHMDCHtYKHpKiAMhgElRt0ISQnJWOdpCXG5cYgxcGl8gA; QSI_HistorySession=https%3A%2F%2Fwww.investors.com%2Fresearch%2Fibd-stock-of-the-day%2Fshopify-stock-shop-us-china-trade-artificial-intelligence-push%2F~1749701491771%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-lists%2Fibd-50%2F~1749965491813%7Chttps%3A%2F%2Fresearch.investors.com%2Feibd%2F%23%2F~1749965616044; QSI_SI_b3B9jsfbYnFoklL_intercept=true; utag_main__sn=1; utag_main_ses_id=1749965630223%3Bexp-session; utag_main__ss=0%3Bexp-session; utag_main__se=3%3Bexp-session; utag_main__st=1749967437018%3Bexp-session; utag_main__pn=3%3Bexp-session; csrf_token=Jmn6JQj5-nwsJcfxVyDPO6eHG4LPM-GaS9k8; .ASPXAUTH=0A482A2492B06E8E559997191D8F597685D2C774EEA0034C40E17839D3CBF8CCA8547D71C2AA4CDF7266A46C41A0C0776CD88822072B85D05C5624C1D56494C978F2DD3099E6F7663210F6122425D340F18465FA1890C5DC9C3297D522E5BEBE580EBF5451CF4585F3894AFED663B16BCDA4906B339826DDA8BFF11D23B4E69BCDA29B3A9E7BB79B643B1BB6DFD512369B5698703FB65586E32D92601D0DA81147A32CE927139A15FBE543CC4234D00E26E7C6EDBF555BD87A9B54F5CB6A5A95AF5C2F075309EF227B959F792CA12F6F1A68BFE0F93B542A05B4D07534C83EA60FAFCC63343BA2F8D87111D956EAFF505794307578C55559E651E76B57A4F6B8ED75FD1895F05B0F1928D26A97EFBB1938B27F36BCF1DE2181433F4AF5F3B1E9AA5457EC63236863EB2D06318F757788F452E9CE1C5913C632002F165FA73AC7E89F3DA87A5096F1FF53071792999C323B2EF5B0D55B5F32B9783F5C9CCE50601647E9DB6786A828479E1A8A0D61BF13CEE0243D19E735EA23929A97A4BC8486C485170AE62179FEBD922FBF0470742EF6CF08EEC24F49562FDFF76579DAF80BB8E9EEB1A32BB814A20C859F7D5F8590C6B30F37; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=009c226d-04f6-4b94-a3b5-3a766de1edf3; ca_rt=8i_RBknuZviCW6OXcFszTA.xYoiuTZeOjixiqHQeI1aJw3zoBMlGqHc67E1lmRuDqQAOzx5MaMP9hbDrgoTJ_JkN6rr12pTu_7pZBFs238zSwVY3eNHvHJ30_-nvmWGN0M; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw1kN1ygjAQhd8l16AJIYR4Va3QUh07_tTqdDpOJEFiAS0EUTt99wan3m2-s3tOdn_ATp1ksSl4LkEPzFN14sACCc9VdrnT9cAgmXOVmUfVtly2iPn0YdeyTnzIjV7XShg5FgwnlBLbRYlnu9DB9pZiYiOHuVL6CEIJTbcuefx1G-CcQRj7HCK8pR7yXIHchAiJfY84HPuSEMIE9gTCOEmI9ITvMsaI7-FEICiNWXnIZAV6HyCcBcEseLKjyTBaRsO3_tio0WBoR4_9_6ofRODTArzW6Uardj1EjZ9HTJoFqtuX5Pn9Oh0tyPP1OP7eB6-j6cqf05eF4EW4muTrfS1IqtfuqZyJs0ZhuQyzVRsQl5JrKTZcG1vCmIMxgcQC6gbuOdQc83xsAYGY0RtQlVkApFofq1632zRNp6n27WW7caZkocHvH00LfB0.e0vkpMwgG5mNyBcrn-vXhL_EMr4vifZComqVNU_7Mb2TNNwFNzizT3GbUPFubT7lBEBV2YHnXQhVqDzzPhEgWR6rY8FCbeHwfJ5GnlsWDc2bxvLmZvTNMI9GfDJKzsA1Oeo5nLqRe7Q6xBZaH_ut-qEVidqfWLrZIrtQxom1QzA0Tah8ZvfslzzPgtrIN5EopNXIKQ0J7jTDjyX1jgAv6It-zfL4DTmacNwTHZmDMj1HDqaU-o6HUnn-RWUrMhsRmw2kMewMpivmRSs_NdbE6ZKBYUTCNkyNX1jSWGjcI0HEz8JeQwkLetjLzCZZQWUww0a_RHZrH5uLDEfQhm1yJw; s_getNewRepeat=1749966188930-New; s_sq=%5B%5BB%5D%5D; AMCV_56B3E406563CC6B77F000101%40AdobeOrg=1075005958%7CMCIDTS%7C20255%7CMCMID%7C92229492508216939856909384198804095497%7CMCAID%7CNONE%7CMCOPTOUT-1749973388s%7CNONE%7CvVersion%7C4.4.1; ibdVS=638855629900257854' \
+  -H 'newrelic: eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkJyb3dzZXIiLCJhYyI6IjMzOTYxMDYiLCJhcCI6IjEzODYxNzIxMzYiLCJpZCI6IjRhOGRmZjM2ODBkNjRmMzAiLCJ0ciI6ImM5OTQ1NWI2ZTJlYTAzZGRjNTZkMmQ5MzhmZTZhMmFhIiwidGkiOjE3NDk5NjYyNTkzNDQsInRrIjoiMTAyMjY4MSJ9fQ==' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://leaderboard.investors.com/?ibdsilentlogin=true' \
+  -H 'sec-ch-ua: "Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'traceparent: 00-c99455b6e2ea03ddc56d2d938fe6a2aa-4a8dff3680d64f30-01' \
+  -H 'tracestate: 1022681@nr=0-1-3396106-1386172136-4a8dff3680d64f30----1749966259344' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+}
+wholelists() {
+  curl -S 'https://leaderboard.investors.com/mobileapi/leaderboard/wholelists' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; _pubcid=de1ba4bc-721a-4cbe-9314-f4395399b0cb; ibdCUPPREVSYM=REVG+0; ibdCUPCNT=060720251; Last5Symbols=EME,WMB,USM,TIGO,FCX; ibdPREVSYM=WMB+1749294808.7607; ibdQCNT=060720253; _gcl_au=1.1.1305426248.1749565752; _pubcid_cst=DCwOLBEsaQ%3D%3D; ibdCHTCNT=0610202522; chartAd=16; _parsely_visitor={%22id%22:%22pid=b663cb02-f58e-41d6-b52f-5589553f2153%22%2C%22session_count%22:64%2C%22last_session_ts%22:1749701374671}; __gads=ID=55fb4e0423b650c7:T=1744343058:RT=1749701493:S=ALNI_MbB5u1D9g_vC03CJHwmBuT-nIAApQ; ibdVC=918; mbox=session#6304e53efdfa41d1b6a8e63003bc7e64#1749967349; s_visit=1; consentUUID=bfb1ad13-2786-4c8b-9f5d-f31846fd44cc; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; __tac=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3d3dy5waWFuby5pbyIsImF1ZCI6ImZ4aDhQdEVKcHUiLCJzdWIiOiJ7XCJ1XCI6XCJhYTkwMGM4YTAxM2I3NjE2NGQxNGY1ZGUzODY1MmEzOGU1NTU5ZDM2ZDEzM2ZmNWU2ZDg0OTk5NTg2M2ZkMTBlXCJ9IiwiZXhwIjoxNzUyNTU3NDk0LCJpYXQiOjE3NDk5NjU0OTR9.XZ_9jV3148dC5SohzBer4xWMy-A181TNxbEjZlnCrhk; __tae=1749965494376; __tbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; __pvi=eyJpZCI6InYtbWJ4ODlzeWZ1dXltOHoybSIsImRvbWFpbiI6Ii5pbnZlc3RvcnMuY29tIiwidGltZSI6MTc0OTk2NTQ5NTY5OH0%3D; ibdFV=1; _pctx=%7Bu%7DN4IgrgzgpgThIC5QENkE4AMGDGAOZGAjAMwBGA7AGyGUAsAJobQGYCs9UxulrATMlyithaesUqNixZmygTctNEtbdpjDFESgADjCjMAlgA9EIAO4QAViAA0IAC4BPbZoQgAagA0QAXzupMHHwiMioaBiY2Di4efkFhVlFxSWlZeUVlVWZ1KGALSx8tEF19Y1N82wdnVxAAYW8fP3BoGABle2R7SFM9AHMDCHtYKHpKiAMhgElRt0ISQnJWOdpCXG5cYgxcGl8gA; QSI_HistorySession=https%3A%2F%2Fwww.investors.com%2Fresearch%2Fibd-stock-of-the-day%2Fshopify-stock-shop-us-china-trade-artificial-intelligence-push%2F~1749701491771%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-lists%2Fibd-50%2F~1749965491813%7Chttps%3A%2F%2Fresearch.investors.com%2Feibd%2F%23%2F~1749965616044; QSI_SI_b3B9jsfbYnFoklL_intercept=true; utag_main__sn=1; utag_main_ses_id=1749965630223%3Bexp-session; utag_main__ss=0%3Bexp-session; utag_main__se=3%3Bexp-session; utag_main__st=1749967437018%3Bexp-session; utag_main__pn=3%3Bexp-session; csrf_token=Jmn6JQj5-nwsJcfxVyDPO6eHG4LPM-GaS9k8; .ASPXAUTH=0A482A2492B06E8E559997191D8F597685D2C774EEA0034C40E17839D3CBF8CCA8547D71C2AA4CDF7266A46C41A0C0776CD88822072B85D05C5624C1D56494C978F2DD3099E6F7663210F6122425D340F18465FA1890C5DC9C3297D522E5BEBE580EBF5451CF4585F3894AFED663B16BCDA4906B339826DDA8BFF11D23B4E69BCDA29B3A9E7BB79B643B1BB6DFD512369B5698703FB65586E32D92601D0DA81147A32CE927139A15FBE543CC4234D00E26E7C6EDBF555BD87A9B54F5CB6A5A95AF5C2F075309EF227B959F792CA12F6F1A68BFE0F93B542A05B4D07534C83EA60FAFCC63343BA2F8D87111D956EAFF505794307578C55559E651E76B57A4F6B8ED75FD1895F05B0F1928D26A97EFBB1938B27F36BCF1DE2181433F4AF5F3B1E9AA5457EC63236863EB2D06318F757788F452E9CE1C5913C632002F165FA73AC7E89F3DA87A5096F1FF53071792999C323B2EF5B0D55B5F32B9783F5C9CCE50601647E9DB6786A828479E1A8A0D61BF13CEE0243D19E735EA23929A97A4BC8486C485170AE62179FEBD922FBF0470742EF6CF08EEC24F49562FDFF76579DAF80BB8E9EEB1A32BB814A20C859F7D5F8590C6B30F37; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=009c226d-04f6-4b94-a3b5-3a766de1edf3; ca_rt=8i_RBknuZviCW6OXcFszTA.xYoiuTZeOjixiqHQeI1aJw3zoBMlGqHc67E1lmRuDqQAOzx5MaMP9hbDrgoTJ_JkN6rr12pTu_7pZBFs238zSwVY3eNHvHJ30_-nvmWGN0M; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw1kN1ygjAQhd8l16AJIYR4Va3QUh07_tTqdDpOJEFiAS0EUTt99wan3m2-s3tOdn_ATp1ksSl4LkEPzFN14sACCc9VdrnT9cAgmXOVmUfVtly2iPn0YdeyTnzIjV7XShg5FgwnlBLbRYlnu9DB9pZiYiOHuVL6CEIJTbcuefx1G-CcQRj7HCK8pR7yXIHchAiJfY84HPuSEMIE9gTCOEmI9ITvMsaI7-FEICiNWXnIZAV6HyCcBcEseLKjyTBaRsO3_tio0WBoR4_9_6ofRODTArzW6Uardj1EjZ9HTJoFqtuX5Pn9Oh0tyPP1OP7eB6-j6cqf05eF4EW4muTrfS1IqtfuqZyJs0ZhuQyzVRsQl5JrKTZcG1vCmIMxgcQC6gbuOdQc83xsAYGY0RtQlVkApFofq1632zRNp6n27WW7caZkocHvH00LfB0.e0vkpMwgG5mNyBcrn-vXhL_EMr4vifZComqVNU_7Mb2TNNwFNzizT3GbUPFubT7lBEBV2YHnXQhVqDzzPhEgWR6rY8FCbeHwfJ5GnlsWDc2bxvLmZvTNMI9GfDJKzsA1Oeo5nLqRe7Q6xBZaH_ut-qEVidqfWLrZIrtQxom1QzA0Tah8ZvfslzzPgtrIN5EopNXIKQ0J7jTDjyX1jgAv6It-zfL4DTmacNwTHZmDMj1HDqaU-o6HUnn-RWUrMhsRmw2kMewMpivmRSs_NdbE6ZKBYUTCNkyNX1jSWGjcI0HEz8JeQwkLetjLzCZZQWUww0a_RHZrH5uLDEfQhm1yJw; __cf_bm=uPXClWMiG81VK.HgAZjZd_8_OdXODMUEcLhoMncdOD4-1749966409-1.0.1.1-gOLQSPIkQR1Id_wypMX34v3OUJLfWwjCb.086yEmhjzsybcSROOw94sxk3D1Uxul4tOg.v0HyOdYz.etVs1WPSd4GgZayVsXIKa_01iBiac; s_getNewRepeat=1749966689886-New; s_sq=%5B%5BB%5D%5D; AMCV_56B3E406563CC6B77F000101%40AdobeOrg=1075005958%7CMCIDTS%7C20255%7CMCMID%7C92229492508216939856909384198804095497%7CMCAID%7CNONE%7CMCOPTOUT-1749973912s%7CNONE%7CvVersion%7C4.4.1; ibdVS=638855635131811586' \
+  -H 'newrelic: eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkJyb3dzZXIiLCJhYyI6IjMzOTYxMDYiLCJhcCI6IjEzODYxNzIxMzYiLCJpZCI6IjU3Y2NiNzRkOTA0M2QyZjkiLCJ0ciI6IjM3M2ZjMWU1NGVhMTAxMmYwYWZmMGU5MzIwNTJlMGMxIiwidGkiOjE3NDk5NjY3MTM0MzgsInRrIjoiMTAyMjY4MSJ9fQ==' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://leaderboard.investors.com/' \
+  -H 'sec-ch-ua: "Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'traceparent: 00-373fc1e54ea1012f0aff0e932052e0c1-57ccb74d9043d2f9-01' \
+  -H 'tracestate: 1022681@nr=0-1-3396106-1386172136-57ccb74d9043d2f9----1749966713438' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' > wholelists.json
+
+  cat wholelists.json | jq -C ".Items[] | {Symbol, SectorRank, Sector, Story, CurrentAction}" | less -R
+  # cat wholelists.json | jq ".Items[].Symbol" | sed "s/\"//g" | tr "\n" "," | pbcopy
+  cat wholelists.json | jq -C ".Items[].Symbol" | tr "\n" " "| sed "s/\"//g" | tee /dev/tty | pbcopy
+}
+
+buyPoint() {
+  curl -S 'https://leaderboard.investors.com/mobileapi/n/PositionsSummary' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -b 'adOu=N; ibdpwv=1; ibdPV=1; pxcts=6bce5689-8797-11ef-ae5b-5e185b18668e; at_check=true; AMCVS_56B3E406563CC6B77F000101%40AdobeOrg=1; CoRegRedirectURL=https://www.investors.com/default.htm; csrf_token_personal=aOxAlPtQ-DqfyR2JbaCsM0Yw6gqTD0FATVg4; ibdshcart=fdf73a08-7ad4-4afd-8741-730bae274437; ab_uuid=acf6a658-e6ad-44da-8afc-f5f2809c5587; djcs_route=fce4380b-fd7b-4a2f-a64c-564edce30fe8; TR=V2-aa900c8a013b76164d14f5de38652a38e5559d36d133ff5e6d849995863fd10e; check=true; s_cc=true; _pcid=%7B%22browserId%22%3A%22m85in9ztqds26eyo%22%7D; __pat=-14400000; xbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; cX_P=m85in9ztqds26eyo; productIdsCookieName=#; TrackingValues=City=&State=&DaysLeft=0&CSAccess=; _pubcid=de1ba4bc-721a-4cbe-9314-f4395399b0cb; ibdCUPPREVSYM=REVG+0; ibdCUPCNT=060720251; Last5Symbols=EME,WMB,USM,TIGO,FCX; ibdPREVSYM=WMB+1749294808.7607; ibdQCNT=060720253; _gcl_au=1.1.1305426248.1749565752; _pubcid_cst=DCwOLBEsaQ%3D%3D; ibdCHTCNT=0610202522; chartAd=16; ibdVC=918; mbox=session#6304e53efdfa41d1b6a8e63003bc7e64#1749967349; s_visit=1; consentUUID=bfb1ad13-2786-4c8b-9f5d-f31846fd44cc; _pxvid=e177f6ba-f5e1-11ef-93b8-ac8ff86a981c; __tac=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3d3dy5waWFuby5pbyIsImF1ZCI6ImZ4aDhQdEVKcHUiLCJzdWIiOiJ7XCJ1XCI6XCJhYTkwMGM4YTAxM2I3NjE2NGQxNGY1ZGUzODY1MmEzOGU1NTU5ZDM2ZDEzM2ZmNWU2ZDg0OTk5NTg2M2ZkMTBlXCJ9IiwiZXhwIjoxNzUyNTU3NDk0LCJpYXQiOjE3NDk5NjU0OTR9.XZ_9jV3148dC5SohzBer4xWMy-A181TNxbEjZlnCrhk; __tae=1749965494376; ibdFV=1; QSI_SI_b3B9jsfbYnFoklL_intercept=true; utag_main__sn=1; utag_main_ses_id=1749965630223%3Bexp-session; utag_main__ss=0%3Bexp-session; utag_main__se=3%3Bexp-session; utag_main__st=1749967437018%3Bexp-session; utag_main__pn=3%3Bexp-session; csrf_token=Jmn6JQj5-nwsJcfxVyDPO6eHG4LPM-GaS9k8; .ASPXAUTH=0A482A2492B06E8E559997191D8F597685D2C774EEA0034C40E17839D3CBF8CCA8547D71C2AA4CDF7266A46C41A0C0776CD88822072B85D05C5624C1D56494C978F2DD3099E6F7663210F6122425D340F18465FA1890C5DC9C3297D522E5BEBE580EBF5451CF4585F3894AFED663B16BCDA4906B339826DDA8BFF11D23B4E69BCDA29B3A9E7BB79B643B1BB6DFD512369B5698703FB65586E32D92601D0DA81147A32CE927139A15FBE543CC4234D00E26E7C6EDBF555BD87A9B54F5CB6A5A95AF5C2F075309EF227B959F792CA12F6F1A68BFE0F93B542A05B4D07534C83EA60FAFCC63343BA2F8D87111D956EAFF505794307578C55559E651E76B57A4F6B8ED75FD1895F05B0F1928D26A97EFBB1938B27F36BCF1DE2181433F4AF5F3B1E9AA5457EC63236863EB2D06318F757788F452E9CE1C5913C632002F165FA73AC7E89F3DA87A5096F1FF53071792999C323B2EF5B0D55B5F32B9783F5C9CCE50601647E9DB6786A828479E1A8A0D61BF13CEE0243D19E735EA23929A97A4BC8486C485170AE62179FEBD922FBF0470742EF6CF08EEC24F49562FDFF76579DAF80BB8E9EEB1A32BB814A20C859F7D5F8590C6B30F37; ca_rt=8i_RBknuZviCW6OXcFszTA.xYoiuTZeOjixiqHQeI1aJw3zoBMlGqHc67E1lmRuDqQAOzx5MaMP9hbDrgoTJ_JkN6rr12pTu_7pZBFs238zSwVY3eNHvHJ30_-nvmWGN0M; ca_id=0f7b9586-b922-4403-8396-039962f63385.eJw1kN1ygjAQhd8l16AJIYR4Va3QUh07_tTqdDpOJEFiAS0EUTt99wan3m2-s3tOdn_ATp1ksSl4LkEPzFN14sACCc9VdrnT9cAgmXOVmUfVtly2iPn0YdeyTnzIjV7XShg5FgwnlBLbRYlnu9DB9pZiYiOHuVL6CEIJTbcuefx1G-CcQRj7HCK8pR7yXIHchAiJfY84HPuSEMIE9gTCOEmI9ITvMsaI7-FEICiNWXnIZAV6HyCcBcEseLKjyTBaRsO3_tio0WBoR4_9_6ofRODTArzW6Uardj1EjZ9HTJoFqtuX5Pn9Oh0tyPP1OP7eB6-j6cqf05eF4EW4muTrfS1IqtfuqZyJs0ZhuQyzVRsQl5JrKTZcG1vCmIMxgcQC6gbuOdQc83xsAYGY0RtQlVkApFofq1632zRNp6n27WW7caZkocHvH00LfB0.e0vkpMwgG5mNyBcrn-vXhL_EMr4vifZComqVNU_7Mb2TNNwFNzizT3GbUPFubT7lBEBV2YHnXQhVqDzzPhEgWR6rY8FCbeHwfJ5GnlsWDc2bxvLmZvTNMI9GfDJKzsA1Oeo5nLqRe7Q6xBZaH_ut-qEVidqfWLrZIrtQxom1QzA0Tah8ZvfslzzPgtrIN5EopNXIKQ0J7jTDjyX1jgAv6It-zfL4DTmacNwTHZmDMj1HDqaU-o6HUnn-RWUrMhsRmw2kMewMpivmRSs_NdbE6ZKBYUTCNkyNX1jSWGjcI0HEz8JeQwkLetjLzCZZQWUww0a_RHZrH5uLDEfQhm1yJw; ASP.NET_SessionId=hea1kblz542d1zh4mefn1qtb; ibd-history=%5B%7B%22symbol%22%3A%22AEM%22%2C%22coName%22%3A%22Agnico-Eagle%20Mines%22%7D%5D; leaderboardChartHistory=AEM%3AAgnico-Eagle%20Mines; ibdSession=Webuserid=7816585143769098&RolesUpdated=True&LogInFlag=1&SessionId=009c226d-04f6-4b94-a3b5-3a766de1edf3&adTr=4&adTi=2&adHo=stocks,etfs,preciousmetals&adJo=tech&adAg=35-44&adGe=Male&adOu=N&adTiD=1 - 5 years investing&adTrD=31 - 40 trades&adJoD=it professional&tdp=False&tdpn=False&twp=False&twpn=False&tdc=False&tdcn=False&twc=False&twcn=False&te=False&ten=False; AMCV_RSID%40AdobeOrg=-127034327%7CMCMID%7C00665355663956820344877146805765263668%7CvVersion%7C5.1.0; _pctx=%7Bu%7DN4IgrgzgpgThIC5QENkE4AMGDGAOZGAjAMwBGA7AGyGUAsAJobQGYCs9UxulrATMlyithaesUqNixZmygTctNEtbdpjDFESgADjCjMAlgA9EIAO4QAViAA0IAC4BPbZoQgAagA0QAXx93IWABle2R7SFM9AHMDCHtYKHpbEAgDeIBJJLdCEkJyVhzaQlxuXGIMXBpfIA; _parsely_session={%22sid%22:65%2C%22surl%22:%22https://www.investors.com/how-to-invest/leaderboard-faq-growth-investing-strategies-position-sizing/%22%2C%22sref%22:%22https://leaderboard.investors.com/%22%2C%22sts%22:1749967265180%2C%22slts%22:1749701374671}; _parsely_visitor={%22id%22:%22pid=b663cb02-f58e-41d6-b52f-5589553f2153%22%2C%22session_count%22:65%2C%22last_session_ts%22:1749967265180}; __pvi=eyJpZCI6InYtbWJ4ODlzeWZ1dXltOHoybSIsImRvbWFpbiI6Ii5pbnZlc3RvcnMuY29tIiwidGltZSI6MTc0OTk2NzI2NjA5NH0%3D; _px3=deefa590904c7291c551c6f49a9d25ac2f66173a27a73a3c83a20165fa039e77:5aRyQOswi/oJTI0NLoyYGlLIue9NrD0UVKSXHOKlqCReYiy6Pr60at9npnWmAjWMot4sd9/wOka2SZqfnv5+eg==:1000:qgEBEhzKb2+J/RfhRytRl4golp7rOobVyqlezr1GHlR6jVxtynb8eazNuv/tJ6FdKkA1ZNipeEm0TlUq9bctvb1U+SICAmZf8tZsUYkVNbi5pfUlFSPWhe+hTRoVXoLVMRDdToDEaW0p9cCW0FpnqeY7Z0KgiiDxqkOW6RbuUKqk9r/qDef5LdYvpPkTyKcpwU1kYzLR1ZnKheyXtqsSyxGSrjZfKVMO8tXh8ZIxZ+8=; __gads=ID=55fb4e0423b650c7:T=1744343058:RT=1749967266:S=ALNI_MbB5u1D9g_vC03CJHwmBuT-nIAApQ; QSI_HistorySession=https%3A%2F%2Fwww.investors.com%2Fresearch%2Fibd-stock-of-the-day%2Fshopify-stock-shop-us-china-trade-artificial-intelligence-push%2F~1749701491771%7Chttps%3A%2F%2Fresearch.investors.com%2Fstock-lists%2Fibd-50%2F~1749965491813%7Chttps%3A%2F%2Fresearch.investors.com%2Feibd%2F%23%2F~1749965616044%7Chttps%3A%2F%2Fget.investors.com%2Fmarketsurge%2F~1749967112862%7Chttps%3A%2F%2Fwww.investors.com%2Fhow-to-invest%2Fleaderboard-faq-growth-investing-strategies-position-sizing%2F~1749967267400; __tbc=%7Bkpcd%7DChBtODVpbjl6dHFkczI2ZXlvEgpmeGg4UHRFSnB1GjxhTk5vOERmSkp0eEtYY0dmb09zTmI1UVh4U0tXYmMxa3NTeTBuZFBXMXhMdk1IcWczZzNESTQ1cWJrOEggAA; s_getNewRepeat=1749967305038-New; s_sq=%5B%5BB%5D%5D; __cf_bm=JM0aj_zNAVFsoV0iyioYJdf8VSwy5AQrlqH_NdGxd1o-1749967314-1.0.1.1-.O_dE3hqOLiOo3KBA38uw0We3uh9CwegsKDb0eYRdev9G_mamvJIn_eMqDL.X1MeJkFpq83hbRjfIJBmj4.FnsNZqhv.hBO3f3cjhBj6EIY; AMCV_56B3E406563CC6B77F000101%40AdobeOrg=1075005958%7CMCIDTS%7C20255%7CMCMID%7C92229492508216939856909384198804095497%7CMCAID%7CNONE%7CMCOPTOUT-1749974522s%7CNONE%7CvVersion%7C4.4.1; ibdVS=638855641226178509' \
+  -H 'newrelic: eyJ2IjpbMCwxXSwiZCI6eyJ0eSI6IkJyb3dzZXIiLCJhYyI6IjMzOTYxMDYiLCJhcCI6IjEzODYxNzIxMzYiLCJpZCI6ImRkOTAwZDc4NGIyZmY1NzQiLCJ0ciI6ImZiZDJjOTU0YTc2NzViNGRhYjkzYTMyZDEwMmMyMDQ2IiwidGkiOjE3NDk5NjczMjI3NjcsInRrIjoiMTAyMjY4MSJ9fQ==' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://leaderboard.investors.com/' \
+  -H 'sec-ch-ua: "Chromium";v="136", "Google Chrome";v="136", "Not.A/Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-gpc: 1' \
+  -H 'traceparent: 00-fbd2c954a7675b4dab93a32d102c2046-dd900d784b2ff574-01' \
+  -H 'tracestate: 1022681@nr=0-1-3396106-1386172136-dd900d784b2ff574----1749967322767' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36' | jq "." | tee /dev/tty > buyPoints.json
+
+  jq ".[] | .Symbol" buyPoints.json | tr "\n" "," | sed "s/\"//g" | pbcopy
+  jq ".[] | {Symbol,Entry,PositionValue}" buyPoints.json
+}
+loans() {
+  # open "https://www.acsmconverter.com/"
+  open /Applications/Adobe\ Digital\ Editions\ 4.5.app
+  open /Applications/calibre.app
+  open "https://nlb.overdrive.com/account/loans"
+  open "/Users/1041803/Calibre Library"
+  open "/Users/1041803/Documents/Digital Editions"
+  open "/Users/1041803/Downloads/"
+
+  echo "confirm moving files?" && read sdfdfdf
+  find "/Users/1041803/Calibre Library" -type f -iname "*.epub" -maxdepth 3 -exec mv -i {} "/Users/1041803/Downloads/Kindle books/" \;
+  find "/Users/1041803/Calibre Library" -mindepth 1 -delete
+  open "https://www.amazon.in/sendtokindle"
+  open "/Users/1041803/Downloads/Kindle books"
+
+  osascript -e 'quit app "Adobe Digital Editions 4.5"' > /dev/null
+  osascript -e 'quit app "calibre"' > /dev/null
+  rm /Users/1041803/Downloads/*.acsm
+}
+words() {
+  echo $@ | tr "," "\n" | wc -l
+}
+ddte() {
+  #!/bin/bash
+
+# Get today's date in M/D/YYYY format without leading zeros
+today=$(date +%m/%d/%Y)
+
+# Convert to YYYY-MM-DD for date calculations
+formatted_date=$(echo $today | awk -F'/' '{printf "%d-%d-%d", $3, $1, $2}')
+
+# Get the day of the week (1 = Monday, ..., 6 = Saturday, 7 = Sunday)
+day_of_week=$(date -j -f "%Y-%m-%d" "$formatted_date" +%u)
+
+# Check if the day is a weekend
+if [ $day_of_week -eq 6 ]; then
+    # Saturday: Add 2 days to get to Monday
+    output_date=$(date -j -f "%Y-%m-%d" -v+2d "$formatted_date" +%m/%d/%Y)
+elif [ $day_of_week -eq 7 ]; then
+    # Sunday: Add 1 day to get to Monday
+    output_date=$(date -j -f "%Y-%m-%d" -v+1d "$formatted_date" +%m/%d/%Y)
+else
+    # Weekday: Keep the original date
+    output_date=$today
+fi
+
+echo $output_date
+}
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+config() {
+  if [[ -z $2 ]]; then
+  open "https://console.cloud.google.com/kubernetes/configmap/asia-southeast1/fpon-cluster/default/$1/details?inv=1&invt=Ab37ow&project=fponprd"
+  open "https://console.cloud.google.com/kubernetes/configmap/asia-southeast1/silkroad-fairnex-prod-ap/default/$1/yaml/view?inv=1&invt=Ab37ow&project=fpg-silkroad-prod"
+  return
+
+  fi
+
+  open "https://console.cloud.google.com/kubernetes/configmap/asia-southeast1/fpon-uat/default/$1/details?inv=1&invt=Ab37ow&project=fpon-224503"
+  open "https://console.cloud.google.com/kubernetes/configmap/asia-southeast1/fpo-platform-fairnex-preprod/default/$1/yaml/view?inv=1&invt=Abm_ZQ&project=fpo-platform-preprod"
+
+}
+
+protectoff() {
+  pkill -f GlobalProtect
+}
+
+sof() {
+  curDir=$(pwd)
+  cd ~/workspaces/seller-toolbox/close-sof-orders
+
+  ./close-orders.sh $@
+
+  cd $curDir
+}
+picker() {
+  curDir=$(pwd)
+  cd ~/workspaces/seller-toolbox/mkp-logistic-vendor_assigment_automation
+
+  ./vendor-assign.sh
+
+  cd $curDir
+}
+
+
+stoplosses() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks || return
+  local file="${1:-stoplosses.txt}"
+  if [[ ! -f $file ]]; then
+    echo "File not found: $file"
+    cd $curDir
+    return 1
+  fi
+  ./field.sh "$file"
+  filters "$file"
+  echo "Filters"
+  echo "Proceed?" && read ans
+  local -a tickers=("${(@f)$(awk '$3 < 0 {print $2}' "$file")}")
+  for symbol in $tickers; do
+    echo $symbol
+    echo "SL" >> temp.txt
+  done
+  cat temp.txt | pbcopy
+  rm -f temp.txt
+
+  echo "SL...."
+
+  echo "Proceed?" && read ans
+  echo "Enter tickers (Ctrl+D when done):"
+  local -a entered=("${(@f)$(cat)}")
+  > temp.txt
+  for symbol in $entered; do
+    echo $symbol
+    awk -v sym="$symbol" '$2 == sym && $3 < 0 {print $4; exit}' "$file" | tee /dev/tty >> temp.txt
+  done
+  cat temp.txt | pbcopy
+  rm -f temp.txt
+
+  echo "Proceed for dates?" && read ans
+
+  for symbol in $entered; do
+    awk -v sym="$symbol" '$2 == sym && $3 < 0 {print $5; exit}' "$file" | tee /dev/tty >> temp.txt
+  done
+
+  cat temp.txt | pbcopy
+  rm -f temp.txt
+  echo "Done?" && read ans
+  close "https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit?gid=314181279#gid=314181279&fvid=1166312445"
+  cd $curDir
+}
+filters() {
+  if [[ -n $1 && -f $1 ]]; then
+    tickers=$(awk '$3 < 0 {print $2}' "$1" | sort -u)
+  else
+    echo "Enter positions (Ctrl+D when done):" && myPositions=$(cat)
+    tickers=$(echo "$myPositions" | awk '$3 < 0 {print $2}' | sort -u)
+  fi
+  regex=$(echo "=REGEXMATCH(I:I, \"^(")
+  for symbol in $(echo $tickers[@]); do
+    regex=$(echo "$regex$symbol|")
+  done
+  regex=$(echo "$regex)$\")")
+
+  echo $regex | tee /dev/tty | pbcopy
+  open "https://docs.google.com/spreadsheets/d/1MlIYs0uha3BrzskcHfchbkLhpFIsNt006YFRl8U4b98/edit?gid=314181279#gid=314181279&fvid=1166312445"
+}
+
+close() {
+osascript << EOF
+tell application "Google Chrome"
+  set theURL to "$1"
+  repeat with w in windows
+    repeat with t in tabs of w
+      if URL of t contains theURL then
+        close t
+      end if
+    end repeat
+  end repeat
+end tell
+EOF
+}
+
+
+companies() {
+  curDir=$(pwd)
+  cd ~/workspaces/stocks/companies
+
+  if [[ ! -z $1 ]]; then
+    cat $1.txt | less
+    cd $curDir
+
+    return
+  fi
+
+  echo "Enter ticker" && read ticker
+  # about $1
+  cd $curDir
+}
+
+
+wlist() {
+  close "https://www.tradingview.com/chart/ds0RqS6l/"
+  open "https://www.tradingview.com/chart/ds0RqS6l/"
+}
+
+newOrders() {
+  grep -v "-" ~/workspaces/stocks/stoplosses.txt | tee /dev/tty | pbcopy
+
+  echo "\n======Stoplosses"
+  read answere
+
+  grep "-" ~/workspaces/stocks/stoplosses.txt | tee /dev/tty | pbcopy
+}
+
+yahooDesc() {
+  curl -c /tmp/yahoo_cookies.txt \
+    "https://finance.yahoo.com/quote/$1" \
+    -H "User-Agent: Mozilla/5.0" > /dev/null 2>&1
+
+  CRUMB=$(curl -s -b /tmp/yahoo_cookies.txt \
+    "https://query1.finance.yahoo.com/v1/test/getcrumb" \
+    -H "User-Agent: Mozilla/5.0")
+
+  curl -s -b /tmp/yahoo_cookies.txt \
+    "https://query1.finance.yahoo.com/v10/finance/quoteSummary/$1?modules=assetProfile&crumb=$CRUMB" \
+    -H "User-Agent: Mozilla/5.0" \
+    | jq -r '.quoteSummary.result[0].assetProfile.longBusinessSummary'
+}
+
+uw() {
+  local tickers="$1"
+  local extPath="$HOME/Downloads/tradingview-extension"
+  local tickersJson="$extPath/tickers.json"
+
+  if [[ -z "$tickers" ]]; then
+    echo "Usage: updateWatchlist 'NASDAQ:AAPL,NASDAQ:MSFT,NYSE:RMAX'"
+    return 1
+  fi
+
+  local jsonArray=$(echo "$tickers" | tr ',' '\n' | jq -R . | jq -s .)
+  echo "{\"tickers\": $jsonArray}" | jq '.' > "$tickersJson"
+  # echo "✓ tickers.json updated: $tickers"
+
+  # Trigger the load directly via CDP — no clicking needed
+  # node $HOME/Downloads/tradingview-extension/trigger-load.js
+  # open "https://www.tradingview.com/symbols/NASDAQ-AAPL/forecast-price-target/"
+  if [[ $2 == "chrome" ]]; then
+    openChrome
+  fi
+}
+
+# Add this to your ~/.zshrc as an alias for convenience
+alias chrome-debug='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222'
+export BASE_URL=localhost:8080
+
+tickerDesc() {
+  for ticker in "$@"; do
+    ./cursor-describe-stock.sh -s $ticker --force-api
+  done
+}
+oktap() {
+  echo "opening prod"
+  "open" https://ntucenterprise.okta.com/app/ntucenterprise_mirakl_1/exkq1r3m5pFdpUYwT5d7/sso/saml
+}
+
+# Define a function that reloads
+reload-zshrc() {
+  source ~/.zshrc
+  zle reset-prompt  # redraws the prompt cleanly after reload
+}
+
+# Register it as a ZLE widget
+zle -N reload-zshrc
+
+# Bind it to a key combo, e.g. Ctrl+X Ctrl+R
+bindkey '^X^R' reload-zshrc
+
+oktau() {
+  ./okta.sh
+}
+
+
+aibonds() {
+  uw "ORCL6302370,XS333313928,FB6383871"
+}
+stars() {
+  printf '%*s\n' "$1" '' | tr ' ' '★' | pbcopy
+}
+msOffer() {
+  curl --request GET \
+  --url "https://fairpricesg-prod.mirakl.net/api/products/offers?all_shipping_zones=true&product_ids=$1&all_offers=true&all_channels=true" \
+  --header 'Accept: application/json' \
+  --header 'Authorization: 37e4863d-5b32-4ba4-a515-2615e1ca5d18' | jq ".products[] | .offers[] | .retail_prices[]"
+}
+previousDate() {
+  prev_date=$(date -j -v-1d -f "%Y-%m-%d" "$1" +%Y-%m-%d)
+  dow=$(date -j -f "%Y-%m-%d" "$prev_date" +%u)   # 1=Mon ... 7=Sun
+
+  if [[ "$dow" == "7" ]]; then
+      prev_date=$(date -j -v-2d -f "%Y-%m-%d" "$prev_date" +%Y-%m-%d)
+  fi
+
+  echo "$prev_date"
+}
+
+openChrome() {
+  open /Applications/Google\ Chrome.app
+  sleep 2
+  open /Applications/TradingView.app
+}
+
+goodReads() {
+  if [[ $1 == "list" ]]; then
+    file="links.txt"
+
+  if [ ! -t 0 ]; then
+      echo "Needs an interactive terminal."
+      return
+  fi
+
+  total=$(grep -c 'https\?://' "$file")
+  count=0
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    # skip blank lines and comments
+    [[ -z "${line//[[:space:]]/}" ]] && continue
+    [[ "$line" == \#* ]] && continue
+
+    url=$(printf '%s\n' "$line" | grep -o 'https\?://[^[:space:]]*' | head -1)
+    [ -z "$url" ] && continue
+
+    # title = everything before the url, minus trailing ":" and spaces
+    title="${line%%"$url"*}"
+    title=$(printf '%s\n' "$title" | sed -e 's/[[:space:]]*$//' -e 's/[:-]$//' -e 's/[[:space:]]*$//')
+    [ -z "$title" ] && title="$url"
+
+    if [ -t 1 ]; then
+      GREEN=$'\033[1;32m'
+      BLUE=$'\033[1;34m'
+      RESET=$'\033[0m'
+    else
+        GREEN=""; BLUE=""; RESET=""
+    fi
+
+    count=$((count + 1))
+    printf '\n[%d/%d] %s%s%s\n' "$count" "$total" "$GREEN" "$title" "$RESET"
+    printf '        %s%s%s\n' "$BLUE" "$url" "$RESET"
+    printf 'Read it? [y/N/q] '
+    read -r answer </dev/tty
+
+    case "$answer" in
+        y|Y)
+            open -a "Google Chrome" "$url"
+            ;;
+        q|Q)
+            echo "Stopped."
+            break
+            ;;
+        *)
+            ;;
+    esac
+  done < "$file"
+
+    echo
+    echo "Done."
+
+    return
+  fi
+
+  echo "Title: \n" && read title
+  echo "Link: \n" && read link
+
+  echo "$title: $link" >> links.txt
+}
+
+yahoo_options() {
+  price $1
+  sleep 1
+  # echo "Proceed?" && read sdfd
+  open https://finance.yahoo.com/quote/$1/options-volume#:~:text=Volume
+}
+
+fee() {
+  str=$(jq -rn --arg s "NATURELOVA-RR==6059" '$s|@uri')
+  open "https://fairpricesg-prod.mirakl.net/mmp/operator/setting/commission/grid/01b38dfa-96f5-447c-97f8-aa59ab39c94d/category?selected=ROOT_MERCHANDISE&shopId=$str"
 }

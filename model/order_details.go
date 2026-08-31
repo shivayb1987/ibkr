@@ -36,6 +36,7 @@ type OrderDetails struct {
 	Ticker             string  `json:"ticker"`
 	TimeInForce        string  `json:"timeInForce"`
 	TotalSize          float64 `json:"totalSize"`
+	TotalAmount        float64 `json:"totalAmount"`
 	StopLossPercent    string  `json:"zStopLossPercent"`
 	TargetPercent      string  `json:"zTargetPercent"`
 	PotentialLoss      string  `json:"zPotentialLoss"`

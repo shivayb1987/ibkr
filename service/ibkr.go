@@ -369,6 +369,13 @@ func (s IBKRAPI) filterOrdersByTickers(orders []model.OrderDetails, tickers []st
 		}
 	}
 
+	entryPrice := 0.0
+	for _, order := range filteredOrders {
+		if order.OrderType == "Stop Limit" {
+			entryPrice, _ = parseFloat(order.Price)
+		}
+	}
+
 	var prices string = "xxx/stopLoss/target"
 	for index, order := range filteredOrders {
 		ss, tt, close := s.getStopLossTarget(context.TODO(), order)
@@ -386,6 +393,12 @@ func (s IBKRAPI) filterOrdersByTickers(orders []model.OrderDetails, tickers []st
 			strValue := strings.Split(order.OrderDesc, " ")[3]
 			stopLoss, _ := strconv.ParseFloat(strings.Replace(strValue, ",", "", 1), 64)
 			prices = strings.Replace(prices, "stopLoss", fmt.Sprintf("%f", stopLoss), 1)
+		}
+
+		if entryPrice > 0 {
+			filteredOrders[index].TotalAmount = filteredOrders[index].TotalSize * entryPrice
+		} else {
+			filteredOrders[index].TotalAmount = filteredOrders[index].TotalSize * close
 		}
 	}
 
@@ -603,4 +616,13 @@ func logging(value interface{}) {
 	}
 
 	log.Println(string(valBytes))
+}
+
+func parseFloat(value string) (float64, error) {
+	valFloat, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return 0, fmt.Errorf("cannot parse value: %w", err)
+	}
+
+	return roundFloat(valFloat), nil
 }
